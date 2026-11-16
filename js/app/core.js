@@ -1,4 +1,4 @@
-// Helpers every layer uses. Loaded by the client (index.html) and by the server runtime (server/manifest.js),
+// Client presentation and editing helpers. Loaded by the client (index.html) and by the server runtime (server/manifest.js),
 // so it must not touch the DOM, the server filesystem or the browser storage APIs.
 'use strict';
 
@@ -46,33 +46,3 @@ function capabilityAllows(list, need) {
     return new RegExp('^' + grant.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$').test(need);
   });
 }
-function checkManifest(manifest) {
-  for (const field of ['grants'])
-    if (
-      manifest[field] !== undefined &&
-      (!Array.isArray(manifest[field]) ||
-        manifest[field].length > 50 ||
-        manifest[field].some(value => typeof value !== 'string' || !CAPABILITY.test(value)))
-    )
-      throw bad(`Invalid ${field}`);
-}
-
-// The server (Node) imports these; the browser and the server runtime use the globals above.
-if (typeof module === 'object' && module.exports)
-  module.exports = {
-    ApiError,
-    bad,
-    missing,
-    uid,
-    clone,
-    isObject,
-    finite,
-    hashText,
-    parentPath,
-    underPath,
-    GRAPH_RANGES,
-    WIRE_STYLE_IDS,
-    CAPABILITY,
-    checkManifest,
-    capabilityAllows,
-  };

@@ -32,7 +32,9 @@
     return `The server speaks protocol ${protocol}; this client supports ${PROTOCOL}. Update the client.`;
   };
 
+  const compatibleAPI = version => typeof version === 'string' && /^2\.\d+$/.test(version);
   return {
+    compatibleAPI,
     NAME,
     PRODUCT,
     PROTOCOL,

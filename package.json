@@ -12,8 +12,7 @@
   "scripts": {
     "test": "node --test",
     "start": "node bin/agentsys-client.js",
-    "build": "node client/build.js",
-    "prepack": "node client/build.js"
+    "build": "node client/build.js"
   },
   "files": [
     "bin/",

@@ -78,7 +78,7 @@ function makeEnvironment(handler) {
   context.self = context;
   context.globalThis = context;
   context.AgentSysProtocol = Protocol;
-  vm.runInContext(fs.readFileSync(path.join(ROOT, 'shared', 'core.js'), 'utf8'), context);
+  vm.runInContext(fs.readFileSync(path.join(ROOT, 'js', 'app', 'core.js'), 'utf8'), context);
   vm.runInContext(fs.readFileSync(path.join(ROOT, 'js', 'app', 'environments.js'), 'utf8'), context);
   const Environment = vm.runInContext('Environment', context);
   return {Environment, requests, localStorage, sessionStorage, context};
