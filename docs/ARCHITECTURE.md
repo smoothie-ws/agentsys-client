@@ -14,7 +14,7 @@ Browser UI / sandboxed plugin
 
 | Component | Responsibility and state owner |
 |---|---|
-| shared/core.js, shared/protocol.js | Pure helpers, errors, capabilities and protocol 2 |
+| js/app/core.js, js/app/protocol.js | Pure helpers, errors, capabilities and protocol 2 |
 | server/api-server.js | Sole HTTP API, Host/Origin/CSRF checks, authentication, SSE and server shutdown |
 | server/credentials.js | In-memory sessions and scoped plugin identities; expiry and revocation |
 | headless.js, server/manifest.js | Fixed server VM script order, no UI or plugin discovery |

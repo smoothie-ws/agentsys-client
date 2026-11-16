@@ -9,7 +9,7 @@
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
-const Protocol = require('../shared/protocol');
+const Protocol = require('../js/app/protocol');
 const {resolveAsset, TYPES, CLIENT_HEADERS} = require('../client/static-assets');
 
 const ROOT = path.resolve(__dirname, '..');

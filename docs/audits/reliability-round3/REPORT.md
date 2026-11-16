@@ -135,7 +135,7 @@ the CSP/direct-network check. S2/S3/S4/S5 above are the architecture fixes.
 ### 11. Architecture invariants
 
 Extended `architecture.test.js`: server never requires a plugin/loads `data/plugins` code; client plugin code uses
-neither `Backend.request` nor `/__data`; the client CLI imports only `shared/protocol` and `server/manifest` from the
+neither `Backend.request` nor `/__data`; the client CLI imports only `js/app/protocol` and `server/manifest` from the
 server half; client UI has no server runtime symbols or route declarations; every route lives in `js/backend` with a
 valid method/pattern. Existing fixed-manifest, DOM-free-server, acyclic-require, neutral-shared and no-compiled-address
 checks pass. Graph-format compatibility is covered by the existing suite plus the new property test.

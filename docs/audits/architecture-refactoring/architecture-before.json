@@ -27,7 +27,7 @@
   "commonjs_edges": [
     {
       "from": "bin/agentsys-client.js",
-      "to": "shared/protocol.js"
+      "to": "js/app/protocol.js"
     },
     {
       "from": "bin/agentsys-client.js",
@@ -35,7 +35,7 @@
     },
     {
       "from": "bin/agentsys-local.js",
-      "to": "shared/protocol.js"
+      "to": "js/app/protocol.js"
     },
     {
       "from": "bin/agentsys-server.js",
@@ -43,7 +43,7 @@
     },
     {
       "from": "bin/agentsys-server.js",
-      "to": "shared/protocol.js"
+      "to": "js/app/protocol.js"
     },
     {
       "from": "bin/agentsys-server.js",
@@ -63,11 +63,11 @@
     },
     {
       "from": "server.js",
-      "to": "shared/protocol.js"
+      "to": "js/app/protocol.js"
     },
     {
       "from": "server.js",
-      "to": "shared/core.js"
+      "to": "js/app/core.js"
     },
     {
       "from": "server.js",
@@ -83,11 +83,11 @@
     },
     {
       "from": "server/credentials.js",
-      "to": "shared/protocol.js"
+      "to": "js/app/protocol.js"
     },
     {
       "from": "server/credentials.js",
-      "to": "shared/core.js"
+      "to": "js/app/core.js"
     },
     {
       "from": "server/file-store.js",
@@ -99,7 +99,7 @@
     },
     {
       "from": "server/migrate.js",
-      "to": "shared/protocol.js"
+      "to": "js/app/protocol.js"
     },
     {
       "from": "server/static-assets.js",
@@ -655,14 +655,14 @@
       "top_level_bindings": 8
     },
     {
-      "file": "shared/core.js",
+      "file": "js/app/core.js",
       "functions": 16,
       "branch_points": 21,
       "largest_function_lines": 10,
       "top_level_bindings": 15
     },
     {
-      "file": "shared/protocol.js",
+      "file": "js/app/protocol.js",
       "functions": 4,
       "branch_points": 6,
       "largest_function_lines": 47,

@@ -97,7 +97,7 @@ The deployed graph is saved by the server. Running it needs no client, plugin ho
 - A plugin never imports application internals. It receives `api` and uses `api.request` or the helpers built on it.
 - The application never imports plugin code. It starts a sandbox and exchanges JSON messages.
 - The server does not know that a Library node came from a plugin. It validates and runs it like any other node.
-- The shared rules live in `shared/core.js`, `js/app/plugin-manifest.js` and `js/app/plugin-capabilities.js`; the
+- The shared rules live in `js/app/core.js`, `js/app/plugin-manifest.js` and `js/app/plugin-capabilities.js`; the
   server and the client use the same capability grammar.
 
 ## State ownership

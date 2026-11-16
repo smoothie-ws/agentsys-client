@@ -23,7 +23,7 @@ Conventions: `HEAD` is the audit branch `audit/12h-platform-hardening`. Test cou
 ## 2026-11-14T15:15 — Reading the code that matters
 
 Read `server.js`, `server/api-server.js`, `server/manifest.js`, `server/migrate.js`, `headless.js`,
-`shared/core.js`, `shared/protocol.js`, `js/app/environments.js`, `js/app/plugin-store.js`,
+`js/app/core.js`, `js/app/protocol.js`, `js/app/environments.js`, `js/app/plugin-store.js`,
 `js/app/extensions.js`, `js/app/router.js`, `js/backend/runtime.js`, `js/backend/execution.js`,
 `js/backend/routes-collections.js`, `js/storage/db.js`, `bin/*.js`, `tests/*` (new files).
 

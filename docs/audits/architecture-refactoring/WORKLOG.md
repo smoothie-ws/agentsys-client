@@ -16,7 +16,7 @@ Every active source file is inventoried in metrics-before.json; generated builti
 | server/credentials | Sessions and scoped credentials; issue/revoke/lookup | per-server private maps, expiry and shutdown | Preserve independent security boundary |
 | server/static-assets | Asset allowlist, path classification, headers | filesystem, manifest; no domain state | Extend boundary to forbid mutation implementation in browser |
 | server/file-store, migrate | Canonical text/JSON, sidecars, redo journal, fingerprints and migration | filesystem, TextGraph; one authoritative data folder | Preserve transaction validation/recovery |
-| shared/core, protocol | Pure errors, grants, protocol names | environment neutral; no owned lifecycle | Keep shared contract small |
+| js/app/core, protocol | Pure errors, grants, protocol names | environment neutral; no owned lifecycle | Keep shared contract small |
 | js/storage/db, format | Cached store/Context and graph serialization | injected store, TextGraph; Context owns pending transaction | Preserve graph format and commit semantics |
 | model/schema, types, snapshot, documents | Graph invariants, types, snapshots and durable shape | pure domain; caller owns document; TypeTable cache per definition set | Remove unused domain implementation from browser manifest |
 | model/editor | Mutating graph operations including copy/paste/Library refresh | domain document, schema, types, snapshot; Call owns/discards failed edits | Retain operations, move read-only lookup out of Editor |

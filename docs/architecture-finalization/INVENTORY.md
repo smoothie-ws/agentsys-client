@@ -8,7 +8,7 @@ The ordered classic-script manifests are dependencies; absence of a CommonJS imp
 
 | Component | Class | Consumers, state owner and lifecycle | Decision / evidence |
 |---|---|---|---|
-| shared/core.js, shared/protocol.js | PLATFORM | Browser and server; pure contracts, no mutable application state | Keep; architecture and API contract tests |
+| js/app/core.js, js/app/protocol.js | PLATFORM | Browser and server; pure contracts, no mutable application state | Keep; architecture and API contract tests |
 | js/model/graph.js, types.js, storage/format.js | CORE | Both manifests; lookup, bindings, type rules and canonical text serialization | Keep shared pure behavior; graph-format, types and format-property tests |
 | js/model/schema.js, documents.js, editor.js, snapshot.js | CORE | Server manifest; request Context owns persisted graph changes | Keep; graph mutation, custom, exchange and concurrency tests |
 | js/model/evaluate.js, executor.js | CORE | Server runtime; per-workflow runtime owns scopes, signals and cancellation | Keep semantics; engine, controls, scope-emit, onread and robustness suites |

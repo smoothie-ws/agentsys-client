@@ -181,7 +181,7 @@ Extended `tests/architecture.test.js` with source checks that:
 
 - server files never `require` a plugin or load `data/plugins` code;
 - client plugin files use neither `Backend.request` nor `/__data`;
-- the client CLI imports only `shared/protocol.js` and `server/manifest.js` from the server half;
+- the client CLI imports only `js/app/protocol.js` and `server/manifest.js` from the server half;
 - the client interface has no server runtime symbols and no route declarations;
 - every route declaration lives in `js/backend` and uses a valid method/pattern.
 

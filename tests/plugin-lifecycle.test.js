@@ -33,7 +33,7 @@ function storeWith(seed = []) {
   });
   context.self = context;
   context.globalThis = context;
-  for (const file of ['shared/core.js', 'js/app/plugin-manifest.js', 'js/app/plugin-capabilities.js', 'js/app/plugin-store.js'])
+  for (const file of ['js/app/core.js', 'js/app/plugin-manifest.js', 'js/app/plugin-capabilities.js', 'js/app/plugin-store.js'])
     vm.runInContext(fs.readFileSync(path.join(__dirname, '..', file), 'utf8'), context);
   return {store: vm.runInContext('PluginStore', context), data, context};
 }

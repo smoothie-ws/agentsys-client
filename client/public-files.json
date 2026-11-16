@@ -86,6 +86,6 @@
   "js/pages/settings.js",
   "js/pages/shared.js",
   "js/storage/format.js",
-  "shared/core.js",
-  "shared/protocol.js"
+  "js/app/core.js",
+  "js/app/protocol.js"
 ]

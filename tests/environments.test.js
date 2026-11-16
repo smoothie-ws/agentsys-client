@@ -7,7 +7,7 @@ const test = require('node:test'),
   fs = require('node:fs'),
   path = require('node:path'),
   vm = require('node:vm');
-const Protocol = require('../shared/protocol');
+const Protocol = require('../js/app/protocol');
 
 const ROOT = path.join(__dirname, '..');
 

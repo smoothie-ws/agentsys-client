@@ -52,7 +52,7 @@ coverage is partial and was checked item by item:
 | Removed capability | Replacement | Verdict |
 |---|---|---|
 | Plugin provider routes (`POST plugins/ai/providers`, URL validation, key masking) | `collections` schema validation + `secrets` routes (`platform.test.js`, `migration.test.js`) | covered, but no test asserts that a provider URL like `file://` is refused by the collection itself (the old plugin enforced it) |
-| Plugin route reached by a Script (`plugins.call` grant) | `permissions.test.js` still validates the grant string; the route no longer exists | grant string accepted but unusable — documented in `shared/core.js` |
+| Plugin route reached by a Script (`plugins.call` grant) | `permissions.test.js` still validates the grant string; the route no longer exists | grant string accepted but unusable — documented in `js/app/core.js` |
 | Plugin client module (`client.js`) | sandboxed client plugins (`client-plugins.test.js`, `browser_platform.py`) | covered |
 | Plugin stop aborts its calls | engine/execution tests cover Stop; no server-plugin equivalent needed | covered |
 | Plugin secrets with masked key | `secrets` route + migration test | covered |

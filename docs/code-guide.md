@@ -1,6 +1,6 @@
-﻿# Code guide
+# Code guide
 
-- `shared/core.js`, `shared/protocol.js`: pure helpers and the server/client contract.
+- `js/app/core.js`, `js/app/protocol.js`: pure helpers and the server/client contract.
 - `js/storage/format.js`: the canonical text graph format (used by both sides).
 - `js/storage/db.js`: server-only key-value store and request `Context`.
 - `js/model/graph.js`: shared read-only snapshot lookup, binding resolution, event names and import defaults.

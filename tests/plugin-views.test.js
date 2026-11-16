@@ -7,7 +7,7 @@ const vm = require('node:vm');
 
 function fixture() {
   const context = vm.createContext({PluginContent: {decorate: (html, owner) => owner + ':' + html}});
-  for (const file of ['shared/core.js', 'js/app/plugin-views.js'])
+  for (const file of ['js/app/core.js', 'js/app/plugin-views.js'])
     vm.runInContext(fs.readFileSync(path.join(__dirname, '..', file), 'utf8'), context);
   const registry = vm.runInContext('new PluginViews()', context);
   const sandbox = id => ({

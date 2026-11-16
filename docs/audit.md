@@ -44,9 +44,9 @@ because the server-plugin tests were replaced by platform, client-plugin and mig
 
 | # | Finding | Fix |
 |---|---|---|
-| B1 | `parentPath` and `underPath` were defined in `js/backend/routes-library.js` but used by client navigation and Library pages. Removing the backend from the client made those pages throw `ReferenceError`. | Moved them to `shared/core.js`. |
-| B2 | `GRAPH_RANGES` and `WIRE_STYLE_IDS` were defined in `js/backend/settings.js` but used by the client Settings page. | Moved them to `shared/core.js`; the server keeps validation alongside the API. |
-| B3 | `checkManifest` was defined in `js/backend/permissions.js` but called by the client graph editor. | Moved the validator to `shared/core.js`; the server still calls it at every API boundary. |
+| B1 | `parentPath` and `underPath` were defined in `js/backend/routes-library.js` but used by client navigation and Library pages. Removing the backend from the client made those pages throw `ReferenceError`. | Moved them to `js/app/core.js`. |
+| B2 | `GRAPH_RANGES` and `WIRE_STYLE_IDS` were defined in `js/backend/settings.js` but used by the client Settings page. | Moved them to `js/app/core.js`; the server keeps validation alongside the API. |
+| B3 | `checkManifest` was defined in `js/backend/permissions.js` but called by the client graph editor. | Moved the validator to `js/app/core.js`; the server still calls it at every API boundary. |
 | B4 | `/api/library/sections` was registered by `routes-plugins.js`. Without the plugin host the client's `loadLibrary()` failed at boot with "API endpoint not found". | The endpoint is now a fixed, empty server route in `routes-library.js`; client plugins add their own pages in the client. |
 | B5 | The combined server's static allowlist served `js/backend/*`, `js/storage/db.js` and `js/model/executor.js` to any browser. | Static serving now rejects the server-only set from `server/manifest.js`. |
 | B6 | The client's UI store wrote every change to the server (`PUT ui-state`) even for a theme toggle. | Replaced by a browser-local store with a one-time import of old server state. |

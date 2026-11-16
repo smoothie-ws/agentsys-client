@@ -28,8 +28,8 @@
       "imports": [
         "./headless",
         "./js/storage/format",
-        "./shared/protocol",
-        "./shared/core",
+        "./js/app/protocol",
+        "./js/app/core",
         "./server/manifest"
       ]
     },
@@ -79,7 +79,7 @@
       "file": "bin/agentsys-client.js",
       "lines": 136,
       "imports": [
-        "../shared/protocol",
+        "../js/app/protocol",
         "../server/manifest"
       ]
     },
@@ -87,7 +87,7 @@
       "file": "bin/agentsys-local.js",
       "lines": 68,
       "imports": [
-        "../shared/protocol"
+        "../js/app/protocol"
       ]
     },
     {
@@ -95,7 +95,7 @@
       "lines": 289,
       "imports": [
         "../server/api-server",
-        "../shared/protocol",
+        "../js/app/protocol",
         "../server/migrate"
       ]
     },
@@ -492,8 +492,8 @@
       "imports": [
         "./headless",
         "./js/storage/format",
-        "./shared/protocol",
-        "./shared/core",
+        "./js/app/protocol",
+        "./js/app/core",
         "./server/manifest"
       ]
     },
@@ -514,16 +514,16 @@
       "lines": 249,
       "imports": [
         "../server",
-        "../shared/protocol"
+        "../js/app/protocol"
       ]
     },
     {
-      "file": "shared/core.js",
+      "file": "js/app/core.js",
       "lines": 78,
       "imports": []
     },
     {
-      "file": "shared/protocol.js",
+      "file": "js/app/protocol.js",
       "lines": 52,
       "imports": []
     }

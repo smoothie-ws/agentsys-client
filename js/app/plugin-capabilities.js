@@ -49,7 +49,7 @@
   };
   const allows = (capabilities, need) =>
     typeof capabilityAllows === 'function'
-      ? capabilityAllows(capabilities, need) // shared/core.js, loaded first in the browser
+      ? capabilityAllows(capabilities, need) // js/app/core.js, loaded first in the browser
       : capabilities.some(value => value === need || (value.includes('*') && matches(value, need)));
 
   /**

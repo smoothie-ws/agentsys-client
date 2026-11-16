@@ -57,8 +57,8 @@
       "imports": [
         "./headless",
         "./server/file-store",
-        "./shared/protocol",
-        "./shared/core",
+        "./js/app/protocol",
+        "./js/app/core",
         "./server/credentials",
         "./server/static-assets"
       ]
@@ -94,7 +94,7 @@
       "lines": 119,
       "bytes": 4810,
       "imports": [
-        "../shared/protocol",
+        "../js/app/protocol",
         "../server/static-assets"
       ]
     },
@@ -103,7 +103,7 @@
       "lines": 68,
       "bytes": 2401,
       "imports": [
-        "../shared/protocol"
+        "../js/app/protocol"
       ]
     },
     {
@@ -112,7 +112,7 @@
       "bytes": 13080,
       "imports": [
         "../server/api-server",
-        "../shared/protocol",
+        "../js/app/protocol",
         "../server/migrate"
       ]
     },
@@ -593,8 +593,8 @@
       "imports": [
         "./headless",
         "./server/file-store",
-        "./shared/protocol",
-        "./shared/core",
+        "./js/app/protocol",
+        "./js/app/core",
         "./server/credentials",
         "./server/static-assets"
       ]
@@ -612,8 +612,8 @@
       "lines": 137,
       "bytes": 6148,
       "imports": [
-        "../shared/protocol",
-        "../shared/core"
+        "../js/app/protocol",
+        "../js/app/core"
       ]
     },
     {
@@ -636,7 +636,7 @@
       "bytes": 11223,
       "imports": [
         "../server",
-        "../shared/protocol"
+        "../js/app/protocol"
       ]
     },
     {
@@ -648,13 +648,13 @@
       ]
     },
     {
-      "file": "shared/core.js",
+      "file": "js/app/core.js",
       "lines": 78,
       "bytes": 3312,
       "imports": []
     },
     {
-      "file": "shared/protocol.js",
+      "file": "js/app/protocol.js",
       "lines": 52,
       "bytes": 1949,
       "imports": []

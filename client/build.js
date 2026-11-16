@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 // Build only reviewed public files; never copy a source directory recursively.
 const fs = require('node:fs');
 const path = require('node:path');

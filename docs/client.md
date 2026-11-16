@@ -21,7 +21,7 @@ the initial environment for a fresh browser profile; the user can add or change 
 
 `index.html` loads:
 
-- `shared/core.js`, `shared/protocol.js` — pure helpers and the API contract.
+- `js/app/core.js`, `js/app/protocol.js` — pure helpers and the API contract.
 - `js/storage/format.js` — reading and writing `agentsys.text/1` packets for import/export.
 - `js/model/{graph,types}.js` — read-only graph contracts, type compatibility and preview lookup.
 - `js/app/*`, `js/pages/*`, `js/canvas/*`, `js/inspector/*`, CSS.
