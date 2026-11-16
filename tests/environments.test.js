@@ -613,3 +613,17 @@ test('API compatibility accepts minor additions independently of application rel
   assert.equal(Protocol.compatibleAPI('2.42'), true);
   for (const value of ['3.0', '1.9', '', null, '2.x']) assert.equal(Protocol.compatibleAPI(value), false);
 });
+
+test('optional session and SSE features can be absent while bearer REST stays usable', async () => {
+  const {Environment, requests} = makeEnvironment(request => {
+    if (request.url.includes(API)) return {body: {...meta, features: {sessions: false, sse: false}}};
+    return plainServer(request);
+  });
+  Environment.save({id: 'local', name: 'Bearer server', url: 'http://client.test', token: 'owner'});
+  assert.equal(await Environment.start(), true);
+  assert.equal(Environment.status().status, 'connected');
+  const projects = await Environment.request('GET', 'projects');
+  assert.equal(projects.length, 1);
+  assert.equal(requests.some(request => request.url.includes('/api/events') || request.url.includes('/api/auth/session')), false);
+  assert.equal(requests.at(-1).headers.Authorization, 'Bearer owner');
+});

@@ -317,6 +317,7 @@ const Environment = (() => {
   async function startSession(env, gate) {
     const token = tokenOf(env.id, env.url);
     if (!token) return {mode: meta?.auth || 'none'};
+    if (meta?.features?.sessions === false) return {mode: 'bearer'};
     const response = await fetch(new URL(env.url + PROTOCOL.SESSION_PATH), {
       method: 'POST',
       credentials: 'include',
@@ -324,7 +325,6 @@ const Environment = (() => {
       body: JSON.stringify({token}),
       signal: signalWithTimeout(gate, 15000),
     });
-    if (response.status === 404) return {mode: 'bearer'}; // an older server: keep using the header
     if (!response.ok)
       throw new ApiError('unauthorized', 'The server rejected the token.', response.status === 401 ? 401 : 502);
     return response.json().catch(() => ({mode: 'cookie'}));
@@ -395,6 +395,7 @@ const Environment = (() => {
 
   /** Reads the server's Server-Sent Events through fetch so the same auth headers apply. Reconnects with backoff. */
   function openStream() {
+    if (meta?.features?.sse === false) return;
     closeStream();
     const env = active;
     const gen = generation;
