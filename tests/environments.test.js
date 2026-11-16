@@ -12,7 +12,7 @@ const Protocol = require('../js/app/protocol');
 const ROOT = path.join(__dirname, '..');
 
 /** A scripted server: `handler(request)` returns {status, body, headers} or {stream: true}. */
-function makeEnvironment(handler) {
+function makeEnvironment(handler, defaultServer = 'http://client.test') {
   const requests = [];
   const storage = () => {
     const data = new Map();
@@ -61,6 +61,7 @@ function makeEnvironment(handler) {
   };
   const context = vm.createContext({
     console,
+    AGENTSYS_DEFAULT_SERVER: defaultServer,
     localStorage,
     sessionStorage,
     fetch,
@@ -596,4 +597,19 @@ test('a newly entered token cannot reach the still-active old URL while its edit
   assert.equal(requests.at(-1).url, 'http://replacement.test/api/projects');
   assert.equal(requests.at(-1).headers.Authorization, 'Bearer new-secret');
   await Environment.setActive(env.id, {reconnect: false});
+});
+
+test('a fresh static installation stays disconnected until a server is supplied', async () => {
+  const {Environment, requests} = makeEnvironment(() => { throw new Error('Unexpected request'); }, '');
+  assert.equal(await Environment.start(), false);
+  assert.equal(Environment.status().status, 'disconnected');
+  assert.equal(Environment.list().length, 0);
+  assert.equal(Environment.defaultURL(), '');
+  assert.equal(requests.length, 0);
+  await assert.rejects(Environment.request('GET', 'projects'), {code: 'disconnected'});
+});
+test('API compatibility accepts minor additions independently of application releases', () => {
+  assert.equal(Protocol.compatibleAPI('2.0'), true);
+  assert.equal(Protocol.compatibleAPI('2.42'), true);
+  for (const value of ['3.0', '1.9', '', null, '2.x']) assert.equal(Protocol.compatibleAPI(value), false);
 });

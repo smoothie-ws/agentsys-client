@@ -424,7 +424,7 @@ Environment.onBeforeSwitch(async () => {
   projectTree.workflows.clear();
 });
 Environment.onAfterSwitch(async () => {
-  if (!app.booted) return;
+  if (!app.booted) return boot();
   const session = await api('session');
   Object.assign(app, {preferences: session.preferences, shortcutDefaults: session.shortcut_defaults});
   applyStyle(session.preferences.style);

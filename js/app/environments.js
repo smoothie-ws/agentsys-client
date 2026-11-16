@@ -81,9 +81,7 @@ const Environment = (() => {
   const defaultURL = () => {
     if (typeof globalThis.AGENTSYS_DEFAULT_SERVER === 'string' && globalThis.AGENTSYS_DEFAULT_SERVER)
       return normalizeURL(globalThis.AGENTSYS_DEFAULT_SERVER);
-    if (typeof location !== 'undefined' && /^https?:$/.test(location.protocol))
-      return normalizeURL(location.origin);
-    return 'http://127.0.0.1:8080';
+    return '';
   };
   function loadList() {
     try {
@@ -108,6 +106,7 @@ const Environment = (() => {
     }
   }
   const ensureDefaults = () => {
+    if (!environments.length && !defaultURL()) return null;
     if (!environments.length) {
       environments.push({id: 'local', name: 'Local Server', url: defaultURL()});
       persistList();
@@ -213,6 +212,7 @@ const Environment = (() => {
   }
   async function requestOnce(method, path, {body, query, edit, signal, env: target, auth}, mayRenew, payload) {
     const env = target || active || ensureDefaults();
+    if (!env) throw new ApiError('disconnected', 'Add a server in Environments to connect.', 503);
     // A server that speaks another protocol is not asked: its answers would be read as this protocol's.
     if (status === 'incompatible')
       throw new ApiError('incompatible_protocol', statusDetail || 'The server speaks another AgentSys protocol', 409);
@@ -308,7 +308,7 @@ const Environment = (() => {
       );
     if (!value.agentsys || value.product !== PROTOCOL.PRODUCT)
       throw new ApiError('invalid_response', 'That address is not an AgentSys server.', 502);
-    if (!PROTOCOL.compatible(value.protocol))
+    if (!PROTOCOL.compatible(value.protocol) || (value.api_version !== undefined && !PROTOCOL.compatibleAPI(value.api_version)))
       throw new ApiError('incompatible_protocol', PROTOCOL.incompatibility(value.protocol), 409);
     return value;
   }
@@ -340,6 +340,7 @@ const Environment = (() => {
   /** One scoped credential per sandbox owner, environment and capability set. Unsupported servers fail closed. */
   async function pluginToken(capabilities, {refresh = false, owner = 'host'} = {}) {
     const env = active || ensureDefaults();
+    if (!env) throw new ApiError('disconnected', 'Connect to a server before using server capabilities.', 503);
     const gen = generation;
     const caps = [...new Set(capabilities)].sort();
     const key = JSON.stringify([env.id, owner, caps]);
@@ -484,6 +485,7 @@ const Environment = (() => {
 
   async function connect(env = active) {
     if (!env) env = ensureDefaults();
+    if (!env) { beginGeneration(); setStatus('disconnected', 'Add a server in Environments to connect.'); return false; }
     active = env;
     // A connection attempt is a new generation: answers of the old environment (and its event stream) are void.
     const gate = beginGeneration();
@@ -557,6 +559,7 @@ const Environment = (() => {
   const api = {
     /** Starts on the saved active environment (or the local default). */
     async start() {
+      await globalThis.AGENTSYS_CONFIG_READY;
       ensureDefaults();
       return connect(active);
     },

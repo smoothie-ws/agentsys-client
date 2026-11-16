@@ -19,5 +19,16 @@ function build(output) {
   }
   return destination;
 }
-if (require.main === module) console.log(build(process.argv[2] || path.join(root, 'dist', 'client')));
+if (require.main === module) {
+  const destination = path.join(root, 'dist', 'client');
+  // Only the fixed generated directory may be replaced. Explicit outputs remain create-only.
+  if (!process.argv[2] && fs.existsSync(destination)) {
+    if (fs.realpathSync(destination) !== destination || fs.realpathSync(path.dirname(destination)) !== path.dirname(destination))
+      throw new Error('Generated output must not be a symlink');
+    const relative = path.relative(root, fs.realpathSync(destination));
+    if (relative !== path.join('dist', 'client')) throw new Error('Output escaped the project');
+    fs.rmSync(destination, {recursive: true});
+  }
+  console.log(build(process.argv[2] || destination));
+}
 module.exports = {build};

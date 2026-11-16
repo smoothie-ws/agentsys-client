@@ -27,6 +27,7 @@
   "client-plugins/reference/ui-showcase/main.js",
   "client-plugins/reference/ui-showcase/plugin.json",
   "client-plugins/reference/ui-showcase/reference-ui-showcase-1.0.0.agentsys-plugin.json",
+  "config.json",
   "css/canvas.css",
   "css/controls.css",
   "css/inspector.css",
@@ -40,6 +41,8 @@
   "index.html",
   "js/app/code-editor.js",
   "js/app/color-picker.js",
+  "js/app/config.js",
+  "js/app/core.js",
   "js/app/dialogs.js",
   "js/app/environments.js",
   "js/app/extensions.js",
@@ -57,6 +60,7 @@
   "js/app/plugin-views.js",
   "js/app/popup.js",
   "js/app/preferences.js",
+  "js/app/protocol.js",
   "js/app/router.js",
   "js/app/shell.js",
   "js/app/tabs.js",
@@ -85,7 +89,5 @@
   "js/pages/projects.js",
   "js/pages/settings.js",
   "js/pages/shared.js",
-  "js/storage/format.js",
-  "js/app/core.js",
-  "js/app/protocol.js"
+  "js/storage/format.js"
 ]

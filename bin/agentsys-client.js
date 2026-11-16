@@ -9,10 +9,10 @@
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
-const Protocol = require('../js/app/protocol');
+const Protocol = {VERSION: require('../package.json').version, CLIENT_PORT: 8081};
 const {resolveAsset, TYPES, CLIENT_HEADERS} = require('../client/static-assets');
 
-const ROOT = path.resolve(__dirname, '..');
+const ROOT = path.resolve(__dirname, '../dist/client');
 const HELP = `AgentSys Client ${Protocol.VERSION}
 
 Usage: agentsys-client [options]
@@ -29,7 +29,7 @@ function parse(argv) {
   const options = {
     port: Number(process.env.CLIENT_PORT || Protocol.CLIENT_PORT),
     host: process.env.CLIENT_HOST || '127.0.0.1',
-    server: process.env.AGENTSYS_DEFAULT_SERVER || 'http://127.0.0.1:' + Protocol.DEFAULT_PORT,
+    server: process.env.AGENTSYS_DEFAULT_SERVER || '',
   };
   for (let i = 0; i < argv.length; i++) {
     const [flag, inline] = argv[i].includes('=') ? [argv[i].slice(0, argv[i].indexOf('=')), argv[i].slice(argv[i].indexOf('=') + 1)] : [argv[i], undefined];
@@ -38,6 +38,7 @@ function parse(argv) {
       if (argv[i + 1] === undefined) fail(`${flag} needs a value`);
       return argv[++i];
     };
+    if (flag === 'serve') continue;
     if (flag === '--port' || flag === '-p') options.port = Number(read());
     else if (flag === '--host' || flag === '-H') options.host = read();
     else if (flag === '--server' || flag === '-s') options.server = read();
@@ -64,8 +65,8 @@ function main() {
   if (options.version) return console.log(Protocol.VERSION);
   if (!Number.isInteger(options.port) || options.port < 0 || options.port > 65535) fail(`Invalid port: ${options.port}`);
   try {
-    const url = new URL(options.server);
-    if (!['http:', 'https:'].includes(url.protocol)) throw new Error('not http(s)');
+    const url = options.server ? new URL(options.server) : null;
+    if (url && (!['http:', 'https:'].includes(url.protocol) || url.username || url.password)) throw new Error('not http(s)');
   } catch {
     fail('--server must be an http:// or https:// URL');
   }
