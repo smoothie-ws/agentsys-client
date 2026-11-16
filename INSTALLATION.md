@@ -1,7 +1,7 @@
 # Installation
 
 For production, unzip the release static artifact into an nginx/Caddy/CDN root.
-Serve index.html for application routes; missing asset paths must remain 404.
+The client uses hash routes; serve files directly and return 404 for missing assets.
 No Node.js or server package is required. HTTPS clients require HTTPS API URLs.
 
 For the optional local CLI (Node.js 22+):
@@ -20,5 +20,36 @@ Set config.json to {"defaultServerURL":"https://server.example"} for an optional
 installation default. It is public: never add credentials or API keys. Existing
 user environments take precedence. The CLI also accepts --server for a default.
 Add this client's exact origin to the server allowlist. Do not proxy the API
-through this static client to bypass CORS. For nginx use `try_files $uri $uri/
-/index.html` only for application routes and return 404 for missing asset paths.
+through the static client to bypass CORS. Hash routing needs no SPA rewrite.
+
+Example nginx configuration (terminate HTTPS for remote deployments):
+
+```nginx
+server {
+  listen 80;
+  root /srv/agentsys-client;
+  location / { try_files $uri $uri/ =404; }
+  add_header X-Content-Type-Options nosniff always;
+  add_header Referrer-Policy no-referrer always;
+  add_header X-Frame-Options DENY always;
+  add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' http: https:; frame-src 'self' blob:; object-src 'none'; base-uri 'none'" always;
+}
+```
+
+Equivalent Caddy static hosting:
+
+```caddyfile
+client.example.com {
+  root * /srv/agentsys-client
+  file_server
+  header {
+    X-Content-Type-Options nosniff
+    Referrer-Policy no-referrer
+    X-Frame-Options DENY
+    Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' http: https:; frame-src 'self' blob:; object-src 'none'; base-uri 'none'"
+  }
+}
+```
+
+Configure equivalent headers on a CDN. Keep the plugin sandbox and frame CSP;
+its script policy matches the existing editor and plugin host requirements.

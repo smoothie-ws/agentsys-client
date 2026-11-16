@@ -9,7 +9,7 @@ npm pack --ignore-scripts
 ```
 
 The static artifact is dist/client. The npm artifact includes the static files
-and optional CLI. Build before packing; source checkout scripts are not shipped
+and optional CLI. npm pack runs prepack to build automatically; source checkout scripts are not shipped
 as public assets. The default generated output can be rebuilt; explicit output
 paths must not already exist. All copied source assets must be regular files
 without symlink traversal. To produce a ZIP, archive the contents of dist/client.
