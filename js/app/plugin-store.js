@@ -8,15 +8,6 @@
 
 const PluginStore = (() => {
   const KEY = 'agentsys.client.v1.client-plugins';
-  // Resolve from this script's own URL: it works at the client root, under /editor/ and on a deep editor URL.
-  const BUILTIN_URL = (() => {
-    try {
-      const source = document.currentScript?.src;
-      return source ? new URL('../../client-plugins/index.json', source).toString() : 'client-plugins/index.json';
-    } catch {
-      return 'client-plugins/index.json';
-    }
-  })();
   const MAX_PLUGINS = 50;
   const ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/;
   const Manifest = PluginManifest;
@@ -57,7 +48,6 @@ const PluginStore = (() => {
     icon: item.icon || 'plug',
     api: item.api,
     enabled: item.enabled !== false,
-    builtin: !!item.builtin,
     source: item.source,
     main: item.main,
     files: item.files ? {...item.files} : {},
@@ -148,34 +138,9 @@ const PluginStore = (() => {
   }
 
   return {
-    /** Loads the bundled catalog once; installed plugins win. */
+    /** Loads only packages explicitly installed in this browser. */
     async load() {
-      if (loaded) return loaded;
-      read();
-      try {
-        const response = await fetch(BUILTIN_URL, {cache: 'no-store'});
-        if (response.ok) {
-          const list = await response.json();
-          for (const item of Array.isArray(list) ? list : []) {
-            let builtin;
-            try {
-              builtin = normalize({...item, builtin: true, origin: 'bundled'});
-            } catch {
-              continue;
-            }
-            if (!loaded.some(existing => existing.id === builtin.id))
-              loaded.push({...builtin, enabled: item.enabled !== false});
-          }
-          try {
-            write();
-          } catch {
-            /* private browsing or a full quota: keep the catalog for this page session */
-          }
-        }
-      } catch {
-        /* a client without a catalog still works */
-      }
-      return loaded;
+      return read();
     },
     list() {
       read();
@@ -218,7 +183,6 @@ const PluginStore = (() => {
           ...previous,
           ...plugin,
           enabled: value.enabled === undefined ? previous.enabled !== false : value.enabled !== false,
-          builtin: previous.builtin || plugin.builtin,
           origin: plugin.origin || previous.origin || 'installed',
           installedAt: previous.installedAt || now,
           updatedAt: now,

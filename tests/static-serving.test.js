@@ -36,8 +36,7 @@ test('the client serves public files and none of its own code', async () => {
       ['/js/app/helpers.js', 'text/javascript'],
       ['/js/app/core.js', 'text/javascript'],
       ['/js/model/graph.js', 'text/javascript'],
-      ['/client-plugins/index.json', 'application/json'],
-      ['/client-plugins/integration-studio/README.md', 'text/markdown'],
+      ['/config.json', 'application/json'],
     ]) {
       const response = await raw(base, pathname);
       assert.equal(response.status, 200, pathname);

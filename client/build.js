@@ -3,11 +3,18 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const files = require('./public-files.json');
+const {readSource} = require('../tools/plugin-pack');
+const Manifest = require('../js/app/plugin-manifest');
 const root = path.resolve(__dirname, '..');
 function build(output) {
   const destination = path.resolve(output);
   if (fs.existsSync(destination)) throw new Error('Build destination must not exist: ' + destination);
+  const packages = new Map(['integration-studio', 'graph-developer-tools'].map(id => {
+    const record = Manifest.normalizePackage(readSource(path.join(root, 'client-plugins', id)));
+    return [`client-plugins/${id}/${record.id}.agentsys-plugin.json`, Manifest.exportPackage(record)];
+  }));
   for (const name of files) {
+    if (packages.has(name)) continue;
     const source = path.join(root, name);
     if (!fs.lstatSync(source).isFile() || fs.realpathSync(source) !== source) throw new Error('Asset must be a regular file without symlinks: ' + name);
   }
@@ -15,7 +22,8 @@ function build(output) {
   for (const name of files) {
     const target = path.join(destination, name);
     fs.mkdirSync(path.dirname(target), {recursive: true});
-    fs.copyFileSync(path.join(root, name), target);
+    if (packages.has(name)) fs.writeFileSync(target, JSON.stringify(packages.get(name), null, 2) + '\n');
+    else fs.copyFileSync(path.join(root, name), target);
   }
   return destination;
 }

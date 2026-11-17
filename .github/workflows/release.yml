@@ -16,6 +16,6 @@ jobs:
       - run: npm pack
       - run: npm pack ./sdk
       - run: python -c "import shutil; shutil.make_archive('agentsys-client-static','zip','dist/client')"
-      - run: gh release create "$GITHUB_REF_NAME" *.tgz *.zip --title "AgentSys Client ${GITHUB_REF_NAME#v}" --notes-file RELEASE-NOTES.md --latest
+      - run: gh release create "$GITHUB_REF_NAME" *.tgz *.zip --title "AgentSys Client ${GITHUB_REF_NAME#v}" --notes "Standalone AgentSys Client MVP. See the repository README for installation and usage." --latest
         env:
           GH_TOKEN: ${{ github.token }}

@@ -17,6 +17,14 @@ exports.activate = async api => {
 };
 ```
 
+Save the JavaScript above as `main.js` next to `plugin.json`:
+
+```json
+{"id":"hello","name":"Hello","version":"0.1.0","api":1,"main":"main.js","capabilities":["graph.read"]}
+```
+
+From the Client source checkout, package the folder with `node tools/plugin-pack.js <folder>` and import the generated JSON on the Plugins page.
+
 For TypeScript:
 
 ```ts
@@ -32,13 +40,13 @@ export = plugin;
 
 `activate` may return a cleanup function; it runs on disable, reload and uninstall just like `deactivate`.
 
-- [Plugin SDK](../docs/plugin-sdk.md)
-- [Manifest](../docs/plugin-manifest.md)
-- [Lifecycle](../docs/plugin-lifecycle.md)
-- [UI extensions](../docs/plugin-ui.md)
-- [Library and collections](../docs/plugin-library.md)
-- [Security model](../docs/plugin-security.md)
-- [Packaging](../docs/plugin-packaging.md)
-- [Development guide](../docs/plugin-development.md)
+- [Plugin SDK](../docs/plugins.md#api)
+- [Manifest](../docs/plugins.md#manifest)
+- [Lifecycle](../docs/plugins.md#lifecycle)
+- [UI extensions](../docs/plugins.md#ui)
+- [Library and collections](../docs/plugins.md#library-and-collections)
+- [Security model](../docs/plugins.md#security)
+- [Packaging](../docs/plugins.md#packaging)
+- [Development guide](../docs/plugins.md#development)
 
 The declarations describe the initial Plugin API 1 and package format 1.

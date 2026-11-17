@@ -45,6 +45,7 @@ try:
         assert page.locator('#modal input[name=version]').input_value()=='0.1.0'
         page.locator('#modal textarea[name=source]').fill('exports.activate = api => { api.commands.register("hello", () => "ready"); };')
         page.locator('#modal button[value=ok]').click()
+        page.locator('#modal').wait_for(state='hidden')
         page.wait_for_function("Extensions.apiOf('first-plugin') !== null")
         assert page.evaluate("Extensions.execute('first-plugin:hello')")=='ready'
         assert page.evaluate("PluginStore.get('first-plugin').api")==1

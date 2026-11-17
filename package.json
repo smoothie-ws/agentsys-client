@@ -14,11 +14,13 @@
     "start": "node bin/agentsys-client.js",
     "build": "node client/build.js",
     "pretest": "node client/build.js",
-    "prepack": "node client/build.js"
+    "prepack": "node client/build.js",
+    "prestart": "node client/build.js"
   },
   "files": [
     "bin/",
-    "client/",
+    "client/static-assets.js",
+    "client/public-files.json",
     "dist/client/"
   ]
 }

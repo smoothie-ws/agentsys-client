@@ -115,8 +115,10 @@ test('the host checks the call it sends, not the label the plugin puts on it', (
   }
 });
 
-test('the shipped packages declare exactly what they use', () => {
-  const catalog = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'client-plugins', 'index.json'), 'utf8'));
+test('shipped packages declare capabilities for their literal REST requests', () => {
+  const Manifest = require('../js/app/plugin-manifest');
+  const {readSource} = require('../tools/plugin-pack');
+  const catalog = ['integration-studio', 'graph-developer-tools'].map(id => Manifest.normalizePackage(readSource(path.join(__dirname, '..', 'client-plugins', id))));
   for (const plugin of catalog) {
     const caps = Capabilities.normalize(plugin.capabilities);
     // The declared source only calls routes its capabilities cover: read what it requests.

@@ -206,7 +206,6 @@
       contributes,
       // These are set by the store, not by a package.
       enabled: value.enabled !== false,
-      builtin: !!value.builtin,
       origin: String(value.origin || 'installed').slice(0, 80),
       installedAt: Number(value.installedAt) || 0,
       updatedAt: Number(value.updatedAt) || 0,

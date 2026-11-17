@@ -7,7 +7,7 @@ const test = require('node:test'),
   path = require('node:path'),
   vm = require('node:vm');
 
-function pluginStore() {
+function pluginStore(fetch = async () => ({ok: false, status: 404})) {
   const data = new Map();
   const localStorage = {
     getItem: key => (data.has(key) ? data.get(key) : null),
@@ -23,7 +23,7 @@ function pluginStore() {
     localStorage,
     sessionStorage: {getItem: () => null, setItem() {}, removeItem() {}},
     crypto: globalThis.crypto,
-    fetch: async () => ({ok: false, status: 404}),
+    fetch,
     setTimeout,
     clearTimeout,
     URL,
@@ -94,14 +94,10 @@ test('client plugin packages are validated: id, API version, source and size lim
   assert.deepEqual(plain(store.list()), []);
 });
 
-test('the shipped catalog is valid and has no privileged server surface', () => {
-  const catalog = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'client-plugins', 'index.json'), 'utf8'));
-  assert.ok(Array.isArray(catalog), 'the catalog is a JSON list');
-  for (const plugin of catalog) {
-    assert.match(plugin.id, /^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/);
-    assert.equal(plugin.api, 2);
-    assert.ok(plugin.source.includes('exports.activate'));
-    // Sandboxed client plugins use the normal API; they do not claim a server plugin route.
-    assert.doesNotMatch(plugin.source, /\.route\s*\(/);
-  }
+test('loading installed plugins never fetches or auto-installs a catalog', async () => {
+  let fetches = 0;
+  const store = pluginStore(async () => { fetches++; return {ok: true, json: async () => []}; });
+  await store.load();
+  assert.equal(fetches, 0);
+  assert.equal(store.list().length, 0);
 });

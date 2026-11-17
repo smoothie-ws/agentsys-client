@@ -151,7 +151,7 @@ function main() {
       return 0;
     }
     if (args[0] === '--all') {
-      const root = args[1] || 'client-plugins/reference';
+      const root = args[1] || 'client-plugins';
       const directories = fs
         .readdirSync(root, {withFileTypes: true})
         .filter(entry => entry.isDirectory() && fs.existsSync(path.join(root, entry.name, 'plugin.json')))

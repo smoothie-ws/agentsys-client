@@ -280,7 +280,7 @@ async function pluginPage(view, route) {
       <div><dt>Runs in</dt><dd>This browser · sandboxed iframe</dd></div>
       <div><dt>Server access</dt><dd>${esc(typeof PluginCapabilities === 'undefined' ? '' : PluginCapabilities.describe(plugin.capabilities))}</dd></div>
       <div><dt>Dependencies</dt><dd>${esc(dependencyText(plugin))}</dd></div>
-      <div><dt>Source</dt><dd>${plugin.builtin ? 'Bundled with the client' : 'Installed here'}</dd></div>
+      <div><dt>Source</dt><dd>Installed here</dd></div>
       ${plugin.author ? `<div><dt>Author</dt><dd>${esc(plugin.author)}</dd></div>` : ''}
       ${plugin.license ? `<div><dt>License</dt><dd>${esc(plugin.license)}</dd></div>` : ''}
       ${plugin.homepage ? `<div><dt>Homepage</dt><dd>${/^https?:\/\//.test(plugin.homepage) ? `<a href="${esc(plugin.homepage)}" target="_blank" rel="noopener noreferrer">${esc(plugin.homepage)}</a>` : esc(plugin.homepage)}</dd></div>` : ''}
