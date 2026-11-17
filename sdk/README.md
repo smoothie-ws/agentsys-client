@@ -41,4 +41,4 @@ export = plugin;
 - [Packaging](../docs/plugin-packaging.md)
 - [Development guide](../docs/plugin-development.md)
 
-The declarations describe API version 2. API version 1 packages keep working; new packages should set `"api": 2`.
+The declarations describe the initial Plugin API 1 and package format 1.

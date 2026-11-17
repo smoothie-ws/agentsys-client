@@ -9,7 +9,7 @@ const test = require('node:test'),
 
 function storeWith(seed = []) {
   const data = new Map();
-  if (seed.length) data.set('agentsys-client-plugins', JSON.stringify(seed));
+  if (seed.length) data.set('agentsys.client.v1.client-plugins', JSON.stringify(seed));
   const localStorage = {
     getItem: key => (data.has(key) ? data.get(key) : null),
     setItem: (key, value) => data.set(String(key), String(value)),
@@ -39,8 +39,8 @@ function storeWith(seed = []) {
 }
 
 const pkg = (overrides = {}) => ({
-    api: 2,
-    formatVersion: 2,
+    api: 1,
+    formatVersion: 1,
   id: 'lifecycle',
   title: 'Lifecycle',
   version: '1.0.0',
@@ -82,29 +82,26 @@ test('updates require explicit approval for writes, wider network access and nam
   }
 });
 
-test('a new version must be newer unless a downgrade is explicit', () => {
+test('content replacement uses checksums regardless of version labels', () => {
   const {store} = storeWith();
-  store.install(pkg({version: '2.0.0'}));
-  assert.throws(
-    () => store.install(pkg({version: '1.0.0'})),
-    error => error.code === 'invalid_request' && /newer/.test(error.message)
-  );
-  assert.equal(store.install(pkg({version: '1.0.0'}), {allowDowngrade: true}).version, '1.0.0');
+  const first = store.install(pkg());
+  store.markActivated(first.id, first.checksum);
+  const next = store.install(pkg({source: 'exports.activate = api => api.ui.toast("new");'}));
+  assert.equal(next.version, first.version);
+  assert.notEqual(next.checksum, first.checksum);
+  assert.equal(store.record(first.id).activatedChecksum, first.checksum);
+  assert.equal(store.install(pkg({version: 'preview'})).version, 'preview');
 });
 
-test('dependency validation names the missing, disabled and incompatible dependency', () => {
+test('dependency validation names the missing and disabled dependency', () => {
   const {store} = storeWith();
   assert.throws(
-    () => store.install(pkg({id: 'app', dependencies: {core: '^1.0.0'}})),
+    () => store.install(pkg({id: 'app', dependencies: ['core']})),
     error => error.code === 'missing_dependency' && /core/.test(error.message)
   );
   store.install(pkg({id: 'core', version: '1.5.0'}));
-  assert.equal(store.install(pkg({id: 'app', dependencies: {core: '^1.0.0'}})).id, 'app');
-  assert.throws(
-    () => store.install(pkg({id: 'bad', dependencies: {core: '^2.0.0'}})),
-    error => error.code === 'incompatible_dependency'
-  );
-  store.install(pkg({id: 'needs-core', dependencies: {core: '^1.0.0'}}));
+  assert.equal(store.install(pkg({id: 'app', dependencies: ['core']})).id, 'app');
+  store.install(pkg({id: 'needs-core', dependencies: ['core']}));
   store.setEnabled('core', false);
   store.setEnabled('needs-core', false);
   assert.throws(
@@ -115,11 +112,11 @@ test('dependency validation names the missing, disabled and incompatible depende
   assert.equal(store.dependencyState('core').ok, true);
 });
 
-test('a format 2 package keeps its modules and assets across export and reinstall', () => {
+test('a format 1 package keeps its modules and assets across export and reinstall', () => {
   const {store} = storeWith();
   const packet = {
-    format: 2,
-    manifest: {id: 'modular', name: 'Modular', version: '1.4.0', api: 2, capabilities: ['library.write']},
+    format: 1,
+    manifest: {id: 'modular', name: 'Modular', version: '1.4.0', api: 1, capabilities: ['library.write']},
     main: 'main.js',
     files: {
       'main.js': 'const help = require("./lib/help"); exports.activate = api => help(api);',
@@ -131,7 +128,7 @@ test('a format 2 package keeps its modules and assets across export and reinstal
   assert.equal(made.hasModules, true);
   assert.deepEqual(Object.keys(store.record('modular').files), ['lib/help.js']);
   const exported = store.export('modular');
-  assert.equal(exported.format, 2);
+  assert.equal(exported.format, 1);
   assert.equal(exported.main, 'main.js');
   assert.match(exported.files['main.js'], /require\("\.\/lib\/help"\)/);
   assert.match(exported.files['lib/help.js'], /module\.exports/);
@@ -148,7 +145,7 @@ test('an unsupported stored record is not activated and its private data is pres
   data.set('agentsys-plugin-legacy@local:note', JSON.stringify({saved: true}));
   assert.equal(store.get('legacy'), undefined);
   assert.equal(data.has('agentsys-plugin-legacy@local:note'), true);
-  assert.equal(JSON.parse(data.get('agentsys-client-plugins')).length, 1, 'reading does not rewrite user data');
+  assert.equal(JSON.parse(data.get('agentsys.client.v1.client-plugins')).length, 1, 'reading does not rewrite user data');
 });
 
 test('uninstall removes the package and every environment-scoped value', () => {
@@ -160,7 +157,7 @@ test('uninstall removes the package and every environment-scoped value', () => {
   assert.equal(store.storage('lifecycle').get('settings'), null);
   store.remove('lifecycle');
   assert.deepEqual(JSON.parse(JSON.stringify(store.list())), []);
-  assert.equal([...data.keys()].some(key => key.startsWith('agentsys-plugin-lifecycle')), false);
+  assert.equal([...data.keys()].some(key => key.startsWith('agentsys.client.v1.plugin-lifecycle')), false);
 });
 
 test('the host storage scope is not reachable with a plugin storage key', () => {
@@ -172,13 +169,13 @@ test('the host storage scope is not reachable with a plugin storage key', () => 
   assert.equal(store.storage('lifecycle').get('__agentsys:deployment'), null);
 });
 
-test('editing a saved server URL isolates plugin data and binds legacy storage before the edit', () => {
+test('editing a saved server URL isolates plugin data without reading or changing old storage', () => {
   const {store, context, data} = storeWith();
   let env = {id: 'saved', url: 'https://one.example'};
   context.Environment = {active: () => env};
   data.set('agentsys-plugin-lifecycle@saved:legacy', JSON.stringify({kept: true}));
-  store.bindEnvironment(env.id, env.url);
-  assert.equal(store.storage('lifecycle').get('legacy').kept, true);
+  assert.equal(store.storage('lifecycle').get('legacy'), null);
+  assert.equal(data.has('agentsys-plugin-lifecycle@saved:legacy'), true);
   store.storage('lifecycle').set('value', 'server one');
   env = {...env, url: 'https://two.example'};
   assert.equal(store.storage('lifecycle').get('value'), null);
@@ -186,5 +183,6 @@ test('editing a saved server URL isolates plugin data and binds legacy storage b
   store.storage('lifecycle').set('value', 'server two');
   env = {...env, url: 'https://one.example'};
   assert.equal(store.storage('lifecycle').get('value'), 'server one');
-  assert.equal(store.storage('lifecycle').get('legacy').kept, true);
+  assert.equal(store.storage('lifecycle').get('legacy'), null);
+  assert.equal(data.has('agentsys-plugin-lifecycle@saved:legacy'), true);
 });

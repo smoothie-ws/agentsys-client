@@ -41,17 +41,17 @@ const Tabs = {
     return route.workflow ? this.key(route) : this.pageKey(route);
   },
   load() {
-    const saved = store.get('agentsys-tabs', []);
+    const saved = store.get('agentsys.client.v1.tabs', []);
     this.items = Array.isArray(saved) ? saved.filter(t => t && t.project && t.workflow) : [];
-    const pages = store.get('agentsys-pages', {});
+    const pages = store.get('agentsys.client.v1.pages', {});
     this.pages = pages && typeof pages === 'object' && !Array.isArray(pages) ? pages : {};
   },
   save() {
     for (const key of this.runtimes.keys())
       if (!this.items.some(tab => this.key(tab) === key)) this.runtimes.delete(key);
     for (const key of this.seen) if (!this.items.some(t => this.key(t) === key)) this.seen.delete(key);
-    store.set('agentsys-tabs', this.items);
-    store.set('agentsys-pages', this.pages);
+    store.set('agentsys.client.v1.tabs', this.items);
+    store.set('agentsys.client.v1.pages', this.pages);
   },
   /** Adds the editor to the bar (or refreshes its name) when its page opens. */
   open(tab) {

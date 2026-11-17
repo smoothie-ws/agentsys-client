@@ -11,7 +11,7 @@ This page is the index. The platform is documented in:
 | [plugin-architecture.md](plugin-architecture.md) | How the parts fit: package store, sandbox, capabilities, tokens, deployment |
 | [plugin-sdk.md](plugin-sdk.md) | Every member of the injected `api` object |
 | [plugin-manifest.md](plugin-manifest.md) | Package and manifest fields, versions, dependencies, files, assets |
-| [plugin-lifecycle.md](plugin-lifecycle.md) | Install, enable, disable, reload, update, uninstall, migration, recovery |
+| [plugin-lifecycle.md](plugin-lifecycle.md) | Install, enable, disable, reload, update, uninstall, recovery |
 | [plugin-ui.md](plugin-ui.md) | Pages, navigation, toolbar, context menus, commands, settings, dialogs, widgets, inspector, views, notifications |
 | [plugin-library.md](plugin-library.md) | Library sections, Custom Nodes, workflow templates, collections, server-only execution |
 | [plugin-capabilities.md](plugin-capabilities.md) | The capability list and what each name permits |
@@ -19,7 +19,6 @@ This page is the index. The platform is documented in:
 | [plugin-packaging.md](plugin-packaging.md) | Building, exporting and installing a package |
 | [plugin-development.md](plugin-development.md) | A complete developer loop, from an empty folder to an update |
 | [plugin-testing.md](plugin-testing.md) | Automated node, browser and server-only tests |
-| [plugin-migration.md](plugin-migration.md) | From old server plugins and from the first client package format |
 
 ## In one minute
 
@@ -54,13 +53,5 @@ Deployment records are kept per environment. Switching servers shows the data of
 again on another server creates its own resources and never reuses an id. Server resources keep working when the
 plugin is disabled, removed or the browser is closed.
 
-No server plugins are supported. Old server plugin folders are handled by `agentsys-server migrate`; see
-[migration.md](migration.md).
 
-The certification matrix and test evidence are in [PLUGIN-CERTIFICATION.md](../PLUGIN-CERTIFICATION.md).
-
-## Release candidate contract
-
-See [API 2 inventory, interaction map, identity and compatibility](plugin-rc-contract.md),
-[Integration Studio](../client-plugins/integration-studio/README.md) and
-[Graph Developer Tools](../client-plugins/graph-developer-tools/README.md).
+Reference applications: [Integration Studio](../client-plugins/integration-studio/README.md) and [Graph Developer Tools](../client-plugins/graph-developer-tools/README.md).

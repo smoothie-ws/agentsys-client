@@ -9,7 +9,6 @@
   else root.PluginCapabilities = factory();
 })(typeof globalThis !== 'undefined' ? globalThis : this, () => {
   'use strict';
-  const API_VERSION = 2;
   // A plugin that declares nothing gets read-only access to the ordinary data.
   const READ_ONLY = ['graph.read', 'library.read', 'collections.read', 'run.read', 'notifications.read', 'settings.read'];
   const PATTERN =
@@ -129,7 +128,6 @@
   };
 
   return {
-    API_VERSION,
     READ_ONLY,
     PATTERN,
     MAX,

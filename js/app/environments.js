@@ -4,11 +4,11 @@
 'use strict';
 
 const Environment = (() => {
-  const LIST_KEY = 'agentsys-environments';
-  const ACTIVE_KEY = 'agentsys-active-environment';
-  const TOKEN_PREFIX = 'agentsys-token:';
+  const LIST_KEY = 'agentsys.client.v1.environments';
+  const ACTIVE_KEY = 'agentsys.client.v1.active-environment';
+  const TOKEN_PREFIX = 'agentsys.client.v1.token:';
   const PROTOCOL = globalThis.AgentSysProtocol;
-  const STATUS = new Set(['connected', 'connecting', 'disconnected', 'unauthorized', 'incompatible', 'error']);
+  const STATUS = new Set(['connected', 'connecting', 'disconnected', 'unauthorized', 'error']);
   const MAX_TOKEN_LENGTH = 4096;
   const listeners = new Set();
   const hookListeners = new Set();
@@ -130,10 +130,10 @@ const Environment = (() => {
   // One stable id per tab: the server keys undo history to it, so two tabs never share a stack.
   const clientId = (() => {
     try {
-      const saved = sessionStorage.getItem('agentsys-client-id');
+      const saved = sessionStorage.getItem('agentsys.client.v1.client-id');
       if (saved) return saved;
       const made = uid();
-      sessionStorage.setItem('agentsys-client-id', made);
+      sessionStorage.setItem('agentsys.client.v1.client-id', made);
       return made;
     } catch {
       return 'tab-' + uid();
@@ -144,11 +144,6 @@ const Environment = (() => {
     if (!url) return '';
     try {
       const key = tokenKey(id) + '@' + encodeURIComponent(url);
-      const legacy = sessionStorage.getItem(tokenKey(id));
-      if (legacy) {
-        sessionStorage.setItem(key, legacy);
-        sessionStorage.removeItem(tokenKey(id));
-      }
       return sessionStorage.getItem(key) || '';
     } catch { return ''; }
   };
@@ -157,7 +152,7 @@ const Environment = (() => {
       if (token) sessionStorage.setItem(tokenKey(id) + '@' + encodeURIComponent(url), String(token).slice(0, MAX_TOKEN_LENGTH));
       else {
         const keys = Array.from({length: sessionStorage.length}, (_, i) => sessionStorage.key(i));
-        for (const key of keys) if (key === tokenKey(id) || key?.startsWith(tokenKey(id) + '@')) sessionStorage.removeItem(key);
+        for (const key of keys) if (key?.startsWith(tokenKey(id) + '@')) sessionStorage.removeItem(key);
       }
     } catch {}
   };
@@ -213,9 +208,7 @@ const Environment = (() => {
   async function requestOnce(method, path, {body, query, edit, signal, env: target, auth}, mayRenew, payload) {
     const env = target || active || ensureDefaults();
     if (!env) throw new ApiError('disconnected', 'Add a server in Environments to connect.', 503);
-    // A server that speaks another protocol is not asked: its answers would be read as this protocol's.
-    if (status === 'incompatible')
-      throw new ApiError('incompatible_protocol', statusDetail || 'The server speaks another AgentSys protocol', 409);
+    if (status === 'error') throw new ApiError('unsupported_contract', 'This client requires the AgentSys API 1 contract.', 409);
     const cleanPath = String(path).replace(/^\/+/, '').replace(/^api\//, '');
     if (!cleanPath || cleanPath.split('/').some(part => part === '.' || part === '..') || /[?#]/.test(cleanPath))
       throw new ApiError('invalid_request', 'Invalid API path', 400);
@@ -308,8 +301,8 @@ const Environment = (() => {
       );
     if (!value.agentsys || value.product !== PROTOCOL.PRODUCT)
       throw new ApiError('invalid_response', 'That address is not an AgentSys server.', 502);
-    if (!PROTOCOL.compatible(value.protocol) || (value.api_version !== undefined && !PROTOCOL.compatibleAPI(value.api_version)))
-      throw new ApiError('incompatible_protocol', PROTOCOL.incompatibility(value.protocol), 409);
+    if (value.protocol !== 1 || value.api_version !== '1.0')
+      throw new ApiError('unsupported_contract', 'This client requires the AgentSys API 1 contract.', 409);
     return value;
   }
 
@@ -511,7 +504,7 @@ const Environment = (() => {
       return true;
     } catch (error) {
       if (!current() || error?.code === 'stale_environment') return false;
-      if (error?.code === 'incompatible_protocol') setStatus('incompatible', error.message);
+      if (error?.code === 'unsupported_contract') setStatus('error', error.message);
       else if (error?.code === 'unauthorized') setStatus('unauthorized', error.message);
       else setStatus('disconnected', error?.message || 'The server could not be reached.');
       return false;
@@ -578,8 +571,6 @@ const Environment = (() => {
       const clean = validate(env);
       const index = environments.findIndex(item => item.id === clean.id);
       if (index >= 0) {
-        if (typeof PluginStore !== 'undefined') PluginStore.bindEnvironment(clean.id, environments[index].url);
-        tokenOf(clean.id, environments[index].url); // bind any legacy token before changing its URL
         environments[index] = clean;
       }
       else environments.push(clean);

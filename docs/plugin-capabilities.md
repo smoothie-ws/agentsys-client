@@ -79,7 +79,7 @@ same capability rules to it, so the boundary does **not** rely on the host page 
 - is revoked immediately when the plugin is disabled, removed or the environment changes;
 - is never written to plugin storage and never exposed to the sandbox.
 
-Older servers without identity-bound scoped tokens refuse plugin operations. There is no owner-session fallback; upgrade the server to use plugins.
+Plugin operations require identity-bound scoped tokens from the API 1 server. Issuance errors refuse the operation.
 
 ## Secrets
 

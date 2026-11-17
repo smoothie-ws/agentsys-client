@@ -32,28 +32,11 @@ const when = seconds => {
  * never on the server.
  */
 const store = (() => {
-  const KEY = 'agentsys-ui-store';
-  const RESERVED = new Set([
-    KEY,
-    'agentsys-environments',
-    'agentsys-active-environment',
-    'agentsys-client-plugins',
-  ]);
+  const KEY = 'agentsys.client.v1.ui-store';
   let values = {};
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
     if (saved && typeof saved === 'object' && !Array.isArray(saved)) values = saved;
-  } catch {}
-  const legacy = [];
-  try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (RESERVED.has(key) || (!key.startsWith('agentsys-') && !key.startsWith('fieldHeights:'))) continue;
-      try {
-        if (!Object.hasOwn(values, key)) values[key] = JSON.parse(localStorage.getItem(key));
-        legacy.push(key);
-      } catch {}
-    }
   } catch {}
   let timer = null;
   const persist = () => {
@@ -62,11 +45,8 @@ const store = (() => {
     } catch (error) {
       console.error('Could not save UI state:', error);
     }
-    for (const key of legacy.splice(0)) localStorage.removeItem(key);
   };
-  const ready = Promise.resolve().then(() => {
-    if (legacy.length) persist();
-  });
+  const ready = Promise.resolve();
   return {
     ready,
     get: (key, fallback = null) => clone(Object.hasOwn(values, key) ? values[key] : fallback),

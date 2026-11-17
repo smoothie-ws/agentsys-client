@@ -14,7 +14,6 @@ exports.activate = async api => {
 exports.deactivate = async api => {};
 exports.onInstall = async (api, context) => {};
 exports.onUpdate = async (api, context) => {};
-exports.migrate = async (api, context) => {};
 exports.onUninstall = async (api, context) => {};
 ```
 
@@ -127,8 +126,6 @@ await api.collections.update('notes', made.id, {...made.data, title: 'Second'}, 
 They compose the same public API and inherit the same capability checks. A plugin never needs an internal module of
 the application.
 
-## Compatibility
+## Contract
 
-`api.api` is **2**, the supported plugin API. Packages use format **2**. A package declares the AgentSys version it needs with
-`manifest.engines.agentsys`. A package whose API or engine range is incompatible is refused at install with a readable
-message; it is not started speculatively.
+`api.api` is **1**. Packages use format **1**. Unsupported contracts are refused before activation. Dependencies name plugin IDs; content checksums select lifecycle hooks.

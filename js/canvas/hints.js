@@ -14,7 +14,7 @@ function snapMove(origin, dx, dy) {
 
 function setSnap(on, save = true) {
   W.snap = !!on;
-  if (save) store.set('agentsys-snap', W.snap);
+  if (save) store.set('agentsys.client.v1.snap', W.snap);
   const button = $('#snap-toggle');
   if (button) {
     button.setAttribute('aria-pressed', String(W.snap));
@@ -25,7 +25,7 @@ function setSnap(on, save = true) {
 
 function setHintsShown(on, save = true) {
   W.hintsShown = !!on;
-  if (save) store.set('agentsys-hints', W.hintsShown);
+  if (save) store.set('agentsys.client.v1.hints', W.hintsShown);
   const button = $('#hints-toggle');
   if (button) {
     button.setAttribute('aria-pressed', String(W.hintsShown));
@@ -127,8 +127,8 @@ function updateHints() {
 }
 
 function wireHints() {
-  setSnap(store.get('agentsys-snap', false), false);
-  setHintsShown(store.get('agentsys-hints', true), false);
+  setSnap(store.get('agentsys.client.v1.snap', false), false);
+  setHintsShown(store.get('agentsys.client.v1.hints', true), false);
   $('#snap-toggle').onclick = () => setSnap(!W.snap);
   $('#hints-toggle').onclick = () => setHintsShown(!W.hintsShown);
 }

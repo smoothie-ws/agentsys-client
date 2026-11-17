@@ -5,49 +5,31 @@ const test = require('node:test'),
 const Manifest = require('../js/app/plugin-manifest');
 
 const base = {
-    formatVersion: 2,
+    formatVersion: 1,
   id: 'demo',
   name: 'Demo plugin',
   version: '1.2.3',
-  api: 2,
+  api: 1,
   source: 'exports.activate = api => { api.ui.toast("hi"); };',
 };
 
-test('semantic versions and ranges are compared without a dependency', () => {
-  assert.equal(Manifest.compareVersions('1.2.3', '1.2.4'), -1);
-  assert.equal(Manifest.compareVersions('1.10.0', '1.9.0'), 1);
-  assert.equal(Manifest.compareVersions('1.0.0-beta.2', '1.0.0'), -1);
-  assert.equal(Manifest.compareVersions('1.0.0-beta.2', '1.0.0-beta.10'), -1);
-  for (const [version, range, ok] of [
-    ['1.2.3', '^1.0.0', true],
-    ['2.0.0', '^1.0.0', false],
-    ['0.2.5', '^0.2.0', true],
-    ['0.3.0', '^0.2.0', false],
-    ['1.2.9', '~1.2.3', true],
-    ['1.3.0', '~1.2.3', false],
-    ['1.5.0', '>=1.0.0 <2.0.0', true],
-    ['2.0.0', '>=1.0.0 <2.0.0', false],
-    ['3.0.0', '^1.0.0 || ^3.0.0', true],
-    ['1.0.0', '1.0.0', true],
-    ['1.0.1', '1.0.0', false],
-    ['1.0.0', '*', true],
-  ])
-    assert.equal(Manifest.satisfies(version, range), ok, `${version} ${range}`);
+test('version labels are metadata and dependency declarations use IDs', () => {
+  assert.equal(Manifest.normalizePackage({...base, version: 'preview'}).version, 'preview');
+  assert.throws(() => Manifest.normalizePackage({...base, dependencies: {core: '*'}}), /list of plugin IDs/);
 });
 
-test('a format 2 package is normalized: modules, assets, contributions and metadata', () => {
+test('a format 1 package is normalized: modules, assets, contributions and metadata', () => {
   const record = Manifest.normalizePackage({
-    format: 2,
+    format: 1,
     manifest: {
       id: 'com.example.data',
       name: 'Structured data',
       version: '2.1.0',
       description: 'A collection UI.',
       icon: 'database',
-      api: 2,
-      engines: {agentsys: '>=0.3.0 <1.0.0'},
+      api: 1,
       capabilities: ['collections.read', 'collections.write', 'library.write'],
-      dependencies: {'core-tools': '^1.0.0'},
+      dependencies: ['core-tools'],
       author: 'Example',
       license: 'MIT',
     },
@@ -67,7 +49,7 @@ test('a format 2 package is normalized: modules, assets, contributions and metad
   assert.equal(record.id, 'com.example.data');
   assert.equal(record.title, 'Structured data');
   assert.equal(record.version, '2.1.0');
-  assert.equal(record.api, 2);
+  assert.equal(record.api, 1);
   assert.equal(record.main, 'main.js');
   assert.match(record.source, /require\("\.\/lib\/helper"\)/);
   assert.deepEqual(Object.keys(record.files), ['lib/helper.js', 'schema.json']);
@@ -78,37 +60,29 @@ test('a format 2 package is normalized: modules, assets, contributions and metad
   assert.equal(record.capabilities.length, 3);
 });
 
-test('legacy and unknown package formats and API versions are rejected', () => {
+test('missing and unknown package formats and API contracts are rejected', () => {
   for (const value of [
-    {id: 'old', title: 'Old', api: 1, source: base.source},
-    {...base, formatVersion: 1},
-    {...base, formatVersion: 2, api: 1},
-    {format: 1, manifest: base, files: {'main.js': base.source}},
+    {id: 'x', api: 1, source: base.source},
+    {...base, formatVersion: 2},
+    {...base, api: 2},
+    {format: 2, manifest: base, files: {'main.js': base.source}},
     {format: 99, manifest: base, files: {'main.js': base.source}},
     {manifest: base, files: {'main.js': base.source}},
-  ]) assert.throws(() => Manifest.normalizePackage(value), error => error.code === 'incompatible_protocol');
+  ]) assert.throws(() => Manifest.normalizePackage(value), {code: 'unsupported_contract'});
 });
 
 test('current format export round-trips code, version and capabilities', () => {
   const record = Manifest.normalizePackage({...base, capabilities: ['graph.read']});
   const packet = Manifest.exportPackage(record);
-  assert.equal(packet.format, 2);
+  assert.equal(packet.format, 1);
   const again = Manifest.normalizePackage(packet);
   assert.equal(again.source, base.source);
   assert.equal(again.version, base.version);
   assert.deepEqual(again.capabilities, ['graph.read']);
 });
 
-test('compatibility is enforced: API, engine range and semantic version', () => {
-  assert.throws(
-    () => Manifest.normalizePackage({...base, api: 99}),
-    error => error.code === 'incompatible_protocol'
-  );
-  assert.throws(
-    () => Manifest.normalizePackage({...base, engines: {agentsys: '>=9.0.0'}}),
-    error => error.code === 'incompatible_protocol'
-  );
-  assert.throws(() => Manifest.normalizePackage({...base, version: 'latest'}), /semantic/);
+test('unknown API contracts are refused', () => {
+  assert.throws(() => Manifest.normalizePackage({...base, api: 99}), {code: 'unsupported_contract'});
 });
 
 test('package paths are relative, portable and cannot leave the package', () => {
@@ -117,8 +91,8 @@ test('package paths are relative, portable and cannot leave the package', () => 
       () =>
         Manifest.normalizePackage({
           ...base,
-          format: 2,
-          manifest: {id: 'x.y', name: 'X', version: '1.0.0', api: 2},
+          format: 1,
+          manifest: {id: 'x.y', name: 'X', version: '1.0.0', api: 1},
           main: 'main.js',
           files: {[path]: 'exports.activate = () => {};', 'main.js': 'exports.activate = () => {};'},
         }),
@@ -130,8 +104,8 @@ test('package paths are relative, portable and cannot leave the package', () => 
     () =>
       Manifest.normalizePackage({
         ...base,
-        format: 2,
-        manifest: {id: 'x.y', name: 'X', version: '1.0.0', api: 2},
+        format: 1,
+        manifest: {id: 'x.y', name: 'X', version: '1.0.0', api: 1},
         main: 'main.js',
         files: {'main.js': 'exports.activate = () => {};', 'view.html': '<script></script>'},
       }),
@@ -139,28 +113,28 @@ test('package paths are relative, portable and cannot leave the package', () => 
   );
 });
 
-test('dependencies are named, range checked and activated in order, with cycles refused', () => {
+test('dependencies are named and activated in order, with cycles refused', () => {
   const core = Manifest.normalizePackage({...base, id: 'core', version: '1.4.0'});
-  const app = Manifest.normalizePackage({...base, id: 'app', version: '1.0.0', dependencies: {core: '^1.0.0'}});
+  const app = Manifest.normalizePackage({...base, id: 'app', version: '1.0.0', dependencies: ['core']});
   assert.equal(Manifest.checkDependencies(app, [core, app], {requireEnabled: true}).ok, true);
   const disabled = {...core, enabled: false};
   assert.equal(Manifest.checkDependencies(app, [disabled, app], {requireEnabled: true}).errors[0].code, 'disabled_dependency');
   const missing = Manifest.checkDependencies(app, [app]);
   assert.equal(missing.errors[0].code, 'missing_dependency');
   const wrong = {...core, version: '2.0.0'};
-  assert.equal(Manifest.checkDependencies(app, [wrong, app]).errors[0].code, 'incompatible_dependency');
+  assert.equal(Manifest.checkDependencies(app, [wrong, app]).ok, true);
   const order = Manifest.activationOrder([app, core]).order.map(plugin => plugin.id);
   assert.deepEqual(order, ['core', 'app']);
-  const cycleA = {...app, id: 'a', dependencies: {b: '*'}};
-  const cycleB = {...app, id: 'b', dependencies: {a: '*'}};
+  const cycleA = {...app, id: 'a', dependencies: ['b']};
+  const cycleB = {...app, id: 'b', dependencies: ['a']};
   assert.equal(Manifest.activationOrder([cycleA, cycleB]).errors[0].code, 'dependency_cycle');
 });
 
 test('unknown capability-shaped fields are kept out of the runtime manifest', () => {
   const record = Manifest.normalizePackage({
     ...base,
-    format: 2,
-    manifest: {id: 'x.y', name: 'X', version: '1.0.0', api: 2, unknown: 'ignored'},
+    format: 1,
+    manifest: {id: 'x.y', name: 'X', version: '1.0.0', api: 1, unknown: 'ignored'},
     main: 'main.js',
     files: {'main.js': 'exports.activate = () => {};'},
   });

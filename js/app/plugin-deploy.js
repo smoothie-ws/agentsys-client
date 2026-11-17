@@ -63,18 +63,6 @@
     };
   }
   const error = (code, message, extra = {}) => ({code, message, ...extra});
-  const versionParts = value =>
-    String(value || '0.0.0')
-      .split('-')[0]
-      .split('.')
-      .map(Number);
-  const compareVersions = (a, b) => {
-    const left = versionParts(a),
-      right = versionParts(b);
-    for (let i = 0; i < 3; i++) if ((left[i] || 0) !== (right[i] || 0)) return (left[i] || 0) < (right[i] || 0) ? -1 : 1;
-    return 0;
-  };
-
   /** Read-only preview. Every mutation is checked again during deployment; this is not a transaction. */
   async function plan(record, {request, force = false} = {}) {
     const contributes = record.contributes || {}, actions = [], permissions = new Set();
@@ -96,13 +84,13 @@
         if (existing.payload?.plugin?.id !== record.id) { action = 'conflict'; reason = 'Existing resource belongs to another owner.'; }
         else if (!existing.payload.plugin.contentChecksum || checksum({...existing.payload, plugin: undefined}) !== existing.payload.plugin.contentChecksum) {
           action = 'conflict'; reason = 'Resource was edited after deployment.';
-        } else if (compareVersions(existing.payload.plugin.version, record.version) > 0) { action = 'skip'; reason = 'A newer package deployed this resource.'; }
+        }
         else {
           const wanted = {name: node.name, code: String(node.code || ''), inputs: Array.isArray(node.inputs) ? node.inputs : [],
             outputs: Array.isArray(node.outputs) ? node.outputs : [], grants: Array.isArray(node.grants) ? node.grants : ['graph.read'],
             description: String(node.description || '').slice(0, 2000), folder: String(node.folder || '').slice(0, 200),
             icon: node.icon, plugin: undefined};
-          action = existing.payload.plugin.version === record.version && existing.payload.plugin.checksum === checksum(wanted) ? 'skip' : 'update';
+          action = existing.payload.plugin.checksum === checksum(wanted) ? 'skip' : 'update';
         }
       }
       actions.push({kind: 'library', name: node.name, action, reason});
@@ -117,7 +105,7 @@
   }
 
   /**
-   * Deploys (or re-deploys) one plugin's declared resources. Idempotent: the same version makes no duplicates, and
+   * Deploys (or re-deploys) one plugin's declared resources. Idempotent: the same content makes no duplicates, and
    * redeploying after a switch recreates only what the current server lacks. User edits to data are preserved.
    *
    * @param record   a normalized plugin record (PluginManifest)
@@ -223,33 +211,13 @@
         if (existing?.payload?.plugin?.contentChecksum &&
             checksum({...existing.payload, plugin: undefined}) !== existing.payload.plugin.contentChecksum)
           throw Object.assign(new Error(`“${existing.name}” was edited after deployment; it was kept.`), {code: 'resource_conflict'});
-        // Another client may have deployed a newer version of this package. An older client must not silently
-        // downgrade the node it finds; the newer definition stays and the older deployment reports why.
-        if (existing?.payload?.plugin?.version && compareVersions(existing.payload.plugin.version, record.version) > 0) {
-          warnings.push(
-            error(
-              'deployment_newer',
-              `“${existing.name}” was deployed by a newer version (${existing.payload.plugin.version}); this package is ${record.version} and did not overwrite it.`,
-              {kind: 'library node', name: node.name}
-            )
-          );
-          next.library[node.name] = {
-            ...next.library[node.name],
-            id: existing.id,
-            checksum: existing.payload.plugin.checksum || '',
-            version: existing.payload.plugin.version,
-          };
-          resourceNames.set(node.name, existing.id);
-          summary.skipped++;
-          return;
-        }
         let saved;
         if (!existing) {
           saved = await request('POST', 'library/script-nodes', wanted);
           summary.created++;
         } else {
           const previous = existing.payload?.plugin?.checksum;
-          if (previous === mark && existing.payload?.plugin?.version === record.version) {
+          if (previous === mark) {
             next.library[node.name] = {...next.library[node.name], id: existing.id, checksum: mark, version: record.version};
             resourceNames.set(node.name, existing.id);
             summary.skipped++;

@@ -60,7 +60,7 @@ function primarySelection() {
   if (nodes[0]) return {kind: 'node', node: nodes[0]};
   return {kind: 'group', group: frames[0], node: W.nodes.get('complex:' + frames[0].id) || null};
 }
-const hasClipboard = () => !!store.get('agentsys-clipboard');
+const hasClipboard = () => !!store.get('agentsys.client.v1.clipboard');
 
 const selectionItems = () => [
   ...selectedNodes(),

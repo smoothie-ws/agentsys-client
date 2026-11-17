@@ -1,4 +1,4 @@
-// The public client plugin contract: package format, manifest, semantic versions, dependencies and compatibility.
+// The public client plugin contract: package format, manifest, dependencies and validation.
 //
 // This module is deliberately free of the DOM, the network and storage so the same rules are used by the client,
 // by the package tool (tools/plugin-pack.js) and by the tests. A plugin package is untrusted input: every field is
@@ -9,10 +9,9 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, () => {
   'use strict';
 
-  const API_VERSION = 2; // the plugin API this client implements
-  const FORMAT_VERSION = 2; // the only supported package format
+  const API_VERSION = 1; // the plugin API this client implements
+  const FORMAT_VERSION = 1; // the only supported package format
   const ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/;
-  const VERSION = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+([0-9A-Za-z.-]+))?$/;
   const ICON = /^[a-z][a-z0-9-]{0,39}$/;
   const MAX_FILES = 64;
   const MAX_FILE = 400000;
@@ -34,95 +33,6 @@
   };
   const isObject = value => !!value && typeof value === 'object' && !Array.isArray(value);
   const clone = value => (value === undefined ? undefined : JSON.parse(JSON.stringify(value)));
-
-  // ----- semantic versions -----
-  function parseVersion(value) {
-    const match = VERSION.exec(String(value ?? '').trim());
-    if (!match) return null;
-    return {
-      raw: String(value).trim(),
-      major: Number(match[1]),
-      minor: Number(match[2]),
-      patch: Number(match[3]),
-      pre: match[4] ? match[4].split('.') : [],
-    };
-  }
-  function compareVersions(a, b) {
-    const left = typeof a === 'string' ? parseVersion(a) : a,
-      right = typeof b === 'string' ? parseVersion(b) : b;
-    if (!left) throw fail('Invalid version: ' + String(a));
-    if (!right) throw fail('Invalid version: ' + String(b));
-    for (const key of ['major', 'minor', 'patch']) if (left[key] !== right[key]) return left[key] < right[key] ? -1 : 1;
-    // A prerelease sorts before the release it leads to (`1.0.0-beta` < `1.0.0`).
-    if (!left.pre.length && right.pre.length) return 1;
-    if (left.pre.length && !right.pre.length) return -1;
-    for (let i = 0; i < Math.max(left.pre.length, right.pre.length); i++) {
-      const x = left.pre[i],
-        y = right.pre[i];
-      if (x === undefined) return -1;
-      if (y === undefined) return 1;
-      const nx = /^\d+$/.test(x),
-        ny = /^\d+$/.test(y);
-      if (nx && ny && Number(x) !== Number(y)) return Number(x) < Number(y) ? -1 : 1;
-      if (nx !== ny) return nx ? -1 : 1;
-      if (x !== y) return x < y ? -1 : 1;
-    }
-    return 0;
-  }
-  function oneTest(version, token) {
-    const text = String(token || '').trim();
-    if (!text || text === '*' || text === 'x' || text === 'X') return true;
-    const match = /^(>=|<=|>|<|=|\^|~)?\s*v?(.+)$/.exec(text);
-    if (!match) throw fail('Invalid version range: ' + text);
-    const operator = match[1] || '=',
-      raw = match[2].trim(),
-      parts = raw.split('.'),
-      lower = parseVersion(raw.replace(/\.(?:x|X|\*)$/, '.0').replace(/\.(?:x|X|\*)/g, '.0'));
-    if (!lower) throw fail('Invalid version range: ' + text);
-    if (operator === '^') {
-      const upper = {major: lower.major, minor: lower.minor, patch: lower.patch, pre: []};
-      if (lower.major > 0) {
-        upper.major++;
-        upper.minor = 0;
-        upper.patch = 0;
-      } else if (lower.minor > 0) {
-        upper.minor++;
-        upper.patch = 0;
-      } else upper.patch++;
-      return compareVersions(version, lower) >= 0 && compareVersions(version, upper) < 0;
-    }
-    if (operator === '~') {
-      const upper = {major: lower.major, minor: lower.minor + 1, patch: 0, pre: []};
-      return compareVersions(version, lower) >= 0 && compareVersions(version, upper) < 0;
-    }
-    if (parts.length === 2 && (parts[0] === 'x' || parts[1] === 'x')) return true;
-    const cmp = compareVersions(version, lower);
-    if (operator === '>=') return cmp >= 0;
-    if (operator === '<=') return cmp <= 0;
-    if (operator === '>') return cmp > 0;
-    if (operator === '<') return cmp < 0;
-    return cmp === 0;
-  }
-  /** `satisfies('1.2.3', '>=1.0.0 <2.0.0')`, with `||` alternatives and space-separated AND clauses. */
-  function satisfies(version, range) {
-    if (!parseVersion(version)) return false;
-    if (range === undefined || range === null || String(range).trim() === '') return true;
-    const alternatives = String(range).split('||');
-    for (const alternative of alternatives) {
-      const tokens = alternative.trim().split(/\s+/).filter(Boolean);
-      if (!tokens.length) return true;
-      // A hyphen range (`1.2.3 - 2.0.0`) is read as two comparisons.
-      const hyphen = /^(.+)\s+-\s+(.+)$/.exec(alternative.trim());
-      if (hyphen) {
-        const hi = String(hyphen[2]).trim();
-        if (compareVersions(version, parseVersion(hi)) > 0) continue;
-        if (compareVersions(version, parseVersion(String(hyphen[1]).trim())) < 0) continue;
-        return true;
-      }
-      if (tokens.every(token => oneTest(version, token))) return true;
-    }
-    return false;
-  }
 
   // ----- files and package fields -----
   const safePath = value => {
@@ -170,28 +80,10 @@
       throw fail('Every capability must be a short string');
     return [...new Set(value)];
   }
-  function normalizeDependencies(value) {
-    if (value === undefined) return {};
-    if (!isObject(value)) throw fail('dependencies must be an object of plugin id to version range');
-    const entries = Object.entries(value);
-    if (entries.length > MAX_DEPENDENCIES) throw fail(`A plugin has at most ${MAX_DEPENDENCIES} dependencies`);
-    const out = {};
-    for (const [id, range] of entries) {
-      if (!ID.test(id)) throw fail('A dependency id is not valid: ' + id.slice(0, 80));
-      if (typeof range !== 'string' || range.length > 120) throw fail('A dependency version range must be a string');
-      // Validate the range now rather than when a user tries to enable the plugin.
-      if (!['*', ''].includes(range.trim())) satisfies('0.0.0', range);
-      out[id] = range.trim() || '*';
-    }
-    return out;
-  }
-  function normalizeEngines(value) {
-    if (value === undefined) return {agentsys: '>=0.3.0'};
-    if (!isObject(value)) throw fail('engines must be an object');
-    const agentsys = value.agentsys === undefined ? '>=0.3.0' : String(value.agentsys);
-    if (agentsys.length > 120) throw fail('engines.agentsys is too long');
-    if (!['*', ''].includes(agentsys.trim())) satisfies('0.0.0', agentsys);
-    return {agentsys};
+  function normalizeDependencies(value = []) {
+    if (!Array.isArray(value) || value.length > MAX_DEPENDENCIES || value.some(id => typeof id !== 'string' || !ID.test(id)))
+      throw fail('dependencies must be a list of plugin IDs');
+    return [...new Set(value)];
   }
   function normalizeContributes(value) {
     if (value === undefined) return {collections: [], library: [], workflows: []};
@@ -245,33 +137,24 @@
   }
 
   /**
-   * Reads a format 2 package or its normalized internal record into the record PluginStore keeps. Throws an actionable error on bad input.
-   * `hostVersion` is the AgentSys version; `apiVersion` is the plugin API this client implements.
+   * Reads a format 1 package or its normalized internal record into the record PluginStore keeps. Throws an actionable error on bad input.
    */
-  function normalizePackage(value, {hostVersion = '0.3.0', apiVersion = API_VERSION, allowSource = true} = {}) {
+  function normalizePackage(value, {allowSource = true} = {}) {
     if (!isObject(value)) throw fail('A plugin package must be a JSON object.');
     const packet = value.format === FORMAT_VERSION;
     if ((value.format !== undefined && !packet) || (!packet && value.formatVersion !== FORMAT_VERSION))
-      throw fail('Only plugin package format 2 is supported.', 'incompatible_protocol');
+      throw fail('Only plugin package format 1 is supported.', 'unsupported_contract');
     const manifest = packet ? value.manifest : value;
     if (!isObject(manifest)) throw fail('manifest must be an object');
     const id = String(manifest.id ?? value.id ?? '');
     if (!ID.test(id)) throw fail('Plugin id must be letters, digits, ".", "_" or "-" (at most 80).');
     const title = String(manifest.name ?? manifest.title ?? value.title ?? '').trim();
     if (!title || title.length > 120) throw fail('A plugin needs a name of 1 to 120 characters.');
-    const version = String(manifest.version ?? value.version ?? '0.0.0');
-    if (!parseVersion(version)) throw fail('A plugin version must be semantic, such as 1.2.0 (' + version.slice(0, 40) + ').');
+    const version = String(manifest.version ?? value.version ?? '0.1.0');
     const api = Number(manifest.api ?? value.api);
-    if (api !== API_VERSION || api !== apiVersion)
-      throw fail(`This client runs client plugin API ${apiVersion}, not ${api}.`, 'incompatible_protocol');
-    const engines = normalizeEngines(manifest.engines ?? value.engines);
-    if (!satisfies(String(hostVersion), engines.agentsys))
-      throw fail(
-        `This plugin needs AgentSys ${engines.agentsys}; this client is ${hostVersion}.`,
-        'incompatible_protocol'
-      );
+    if (api !== API_VERSION) throw fail('Plugin API 1 is required.', 'unsupported_contract');
     const dependencies = normalizeDependencies(manifest.dependencies ?? value.dependencies);
-    if (Object.hasOwn(dependencies, id)) throw fail('A plugin cannot depend on itself');
+    if (dependencies.includes(id)) throw fail('A plugin cannot depend on itself');
 
     const main = safePath(value.main || 'main.js');
     const files = {};
@@ -311,7 +194,6 @@
       icon,
       version,
       api,
-      engines,
       dependencies,
       capabilities: normalizeCapabilities(manifest.capabilities ?? value.capabilities),
       author: String(manifest.author ?? value.author ?? '').slice(0, 120),
@@ -328,30 +210,23 @@
       origin: String(value.origin || 'installed').slice(0, 80),
       installedAt: Number(value.installedAt) || 0,
       updatedAt: Number(value.updatedAt) || 0,
-      activatedVersion: String(value.activatedVersion || ''),
-      dataVersion: Number(value.dataVersion) || 0,
+      activatedChecksum: String(value.activatedChecksum || ''),
       checksum: String(value.checksum || ''),
     };
   }
 
-  /** The dependency and version state of one plugin against the packages installed beside it. */
+  /** The dependency state of one plugin against the packages installed beside it. */
   function checkDependencies(plugin, plugins, {requireEnabled = false} = {}) {
     const list = (plugins || []).filter(item => item && item.id);
     const byId = new Map(list.map(item => [item.id, item]));
     const errors = [];
-    for (const [id, range] of Object.entries(plugin?.dependencies || {})) {
+    for (const id of plugin?.dependencies || []) {
       const found = byId.get(id);
       if (!found) {
-        errors.push({code: 'missing_dependency', id, message: `Needs the plugin "${id}" ${range}.`});
+        errors.push({code: 'missing_dependency', id, message: `Needs the plugin "${id}".`});
         continue;
       }
-      if (!satisfies(found.version || '0.0.0', range))
-        errors.push({
-          code: 'incompatible_dependency',
-          id,
-          message: `${id} ${found.version} does not satisfy ${range}.`,
-        });
-      else if (requireEnabled && found.enabled === false)
+      if (requireEnabled && found.enabled === false)
         errors.push({code: 'disabled_dependency', id, message: `The plugin "${id}" it needs is turned off.`});
     }
     return {ok: !errors.length, errors};
@@ -374,7 +249,7 @@
         return;
       }
       state.set(plugin.id, 'visiting');
-      for (const id of Object.keys(plugin.dependencies || {})) {
+      for (const id of plugin.dependencies || []) {
         const next = byId.get(id);
         if (!next) {
           errors.push({code: 'missing_dependency', id: plugin.id, message: `Needs the plugin "${id}", which is not installed.`});
@@ -400,7 +275,7 @@
       record.assets || {},
       record.contributes || {},
       record.capabilities || [],
-      record.dependencies || {},
+      record.dependencies || [],
     ]);
     let hash = 0x811c9dc5;
     for (let i = 0; i < text.length; i++) {
@@ -410,7 +285,7 @@
     return 'fnv1a-' + hash.toString(16).padStart(8, '0');
   }
 
-  /** The distributable form: format 2, the main file inside files, and the checksum. */
+  /** The distributable form: format 1, the main file inside files, and the checksum. */
   function exportPackage(record) {
     const clean = normalizePackage(record, {allowSource: true});
     const files = {...clean.files, [clean.main]: clean.source};
@@ -423,7 +298,6 @@
         description: clean.description,
         icon: clean.icon,
         api: clean.api,
-        engines: clean.engines,
         capabilities: clean.capabilities || [],
         dependencies: clean.dependencies,
         author: clean.author,
@@ -438,10 +312,10 @@
     };
   }
 
-  /** Validates the current stored record; per-plugin data migrations belong to lifecycle hooks. */
+  /** Validates the current stored record; private plugin data belongs to its lifecycle hooks. */
   function readRecord(value) {
     if (!isObject(value) || value.formatVersion !== FORMAT_VERSION)
-      throw fail('Only stored plugin format 2 is supported.', 'incompatible_protocol');
+      throw fail('Only stored plugin format 1 is supported.', 'unsupported_contract');
     const record = normalizePackage(value);
     return {...record, checksum: value.checksum || fingerprint(record)};
   }
@@ -450,7 +324,6 @@
     API_VERSION,
     FORMAT_VERSION,
     ID,
-    VERSION,
     MAX_FILES,
     MAX_FILE,
     MAX_TOTAL,
@@ -458,9 +331,6 @@
     MAX_ASSET,
     MAX_CAPABILITIES,
     MAX_DEPENDENCIES,
-    parseVersion,
-    compareVersions,
-    satisfies,
     safePath,
     normalizePackage,
     normalizeAssets,

@@ -27,8 +27,8 @@ sees only the ordinary API calls a plugin makes. A package cannot install a serv
 
 ### Package store — `js/app/plugin-store.js`
 
-- Keeps at most 50 packages, validates every field and refuses duplicate ids, non-semantic versions and unsafe paths.
-- Keeps the enabled state, the installed and updated timestamps, the activated version and the data version.
+- Keeps at most 50 packages, validates every field and replaces matching IDs and refuses unsafe paths.
+- Keeps the enabled state, the installed and updated timestamps, the activated content checksum.
 - Provides private storage scoped by plugin **and active environment**. Host bookkeeping uses a reserved key a
   sandbox cannot read or write.
 - Exports a package in the distributable format. It never executes code.
@@ -37,9 +37,9 @@ sees only the ordinary API calls a plugin makes. A package cannot install a serv
 
 Pure validation shared by the browser, the pack tool and the tests:
 
-- semantic versions and ranges (`^`, `~`, `>=`, `<`, `||`, hyphen ranges);
-- package formats 1 and 2, safe relative module paths and size limits;
-- dependencies, dependency cycles and AgentSys engine compatibility;
+- display metadata and dependency IDs;
+- package format 1, safe relative module paths and size limits;
+- dependency IDs and dependency cycles;
 - deterministic checksums and export/import round trips.
 
 ### Extension host — `js/app/extensions.js`
@@ -87,7 +87,7 @@ the next environment. See [plugin-capabilities.md](plugin-capabilities.md) and [
 Turns a package's `contributes` section into ordinary server data, idempotently and per environment:
 
 - collection definitions (records are never rewritten or deleted);
-- Script-backed Library nodes owned by the plugin, updated in place on a new version;
+- Script-backed Library nodes owned by the plugin, updated in place when content changes;
 - a workflow project, a workflow and its Library nodes, usually with a native Event trigger.
 
 The deployed graph is saved by the server. Running it needs no client, plugin host or plugin token.

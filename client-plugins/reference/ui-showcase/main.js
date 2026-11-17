@@ -10,8 +10,7 @@ exports.onInstall = async api => {
 };
 
 exports.onUpdate = async (api, context) => {
-  await api.storage.set('updated', {from: context.from, to: context.to, at: Date.now()});
-  return context.to;
+  await api.storage.set('updated', {previousChecksum: context.previousChecksum, checksum: context.checksum, at: Date.now()});
 };
 
 exports.activate = async api => {

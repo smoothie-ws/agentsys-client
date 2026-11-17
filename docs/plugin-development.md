@@ -6,15 +6,10 @@ error to fix, capabilities, Library nodes, a package and an update.
 ## 1. Start AgentSys
 
 ```bash
-npm start
+node bin/agentsys-client.js serve --port 8081 --server http://127.0.0.1:8080
 ```
 
-Open the printed client address. The default server is loopback only. For a separate client and server:
-
-```bash
-npm run server
-npm run client
-```
+Start AgentSys Server separately, then open the client address.
 
 ## 2. Write the smallest plugin
 
@@ -33,7 +28,7 @@ hello/
   "version": "1.0.0",
   "description": "A first plugin.",
   "icon": "sparkles",
-  "api": 2,
+  "api": 1,
   "capabilities": ["graph.read"],
   "main": "main.js"
 }
@@ -60,7 +55,7 @@ The full example lives in [`examples/hello-plugin`](../examples/hello-plugin).
 node tools/plugin-pack.js hello
 ```
 
-Open the **Plugins** page, open its **⋯** menu, choose **Install plugin…**, then **Import JSON file…**, choose `hello/hello-agent-1.0.0.agentsys-plugin.json`. The
+Open the **Plugins** page, open its **⋯** menu, choose **Install plugin…**, then **Import JSON file…**, choose `hello/hello-agent.agentsys-plugin.json`. The
 plugin is stored in this browser only. Open its card to see its state, interface contributions and package.
 
 For a quick experiment without a file, the install form accepts the same fields and source directly.
@@ -128,12 +123,11 @@ curl -X POST http://127.0.0.1:8080/api/projects/<id>/execution?workflow_id=<wf> 
 
 ## 9. Update the package
 
-1. Change the code and bump `manifest.version`.
+1. Change the code; optionally edit its display label.
 2. Build again.
 3. On the plugin page choose **Update from file…** and pick the new package.
 
-Private data and enabled state are kept. `onUpdate(api, {from, to, dataVersion})` runs before `activate`; return a new
-data version if you migrate stored values. If the new version cannot start, the previous package is restored.
+Private data and enabled state are kept. `onUpdate(api, {hook, previousChecksum, checksum})` runs before `activate` when content changes. If replacement content cannot start, the previous package is restored.
 
 ## 10. Test it
 
@@ -157,7 +151,5 @@ data version if you migrate stored values. If the new version cannot start, the 
 | A page is blank | The renderer threw; the error is in the console and the page body |
 | An image does not show | Assets must be PNG/JPEG/GIF/WebP and used with `api.asset` in an `<img>` |
 
-The [RC contract](plugin-rc-contract.md) lists the supported operations and intentional omissions.
-Updates adding capabilities require explicit permission approval. An older server without identity-bound
-plugin tokens must be upgraded. See the independent [Integration Studio](../client-plugins/integration-studio/README.md)
+Updates adding capabilities require explicit permission approval. The API 1 server issues identity-bound plugin tokens. See the independent [Integration Studio](../client-plugins/integration-studio/README.md)
 and [Graph Developer Tools](../client-plugins/graph-developer-tools/README.md) examples.

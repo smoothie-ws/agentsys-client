@@ -15,7 +15,7 @@ for (const slug of ['integration-studio', 'graph-developer-tools']) {
   test(`${slug} ships a reproducible standalone package using only package-local imports`, () => {
     const directory = path.join(ROOT, '..', slug);
     const record = Manifest.normalizePackage(readSource(directory));
-    const packet = JSON.parse(fs.readFileSync(path.join(directory, `${slug}-1.0.0.agentsys-plugin.json`), 'utf8'));
+    const packet = JSON.parse(fs.readFileSync(path.join(directory, `${slug}.agentsys-plugin.json`), 'utf8'));
     assert.equal(Manifest.fingerprint(record), packet.checksum);
     assert.deepEqual(Manifest.exportPackage(Manifest.normalizePackage(packet)), Manifest.exportPackage(record));
     for (const source of [record.source, ...Object.values(record.files)]) {
@@ -29,7 +29,7 @@ test('source packaging is identical for LF and CRLF checkouts', () => {
   const os = require('node:os');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agentsys-package-lines-'));
   try {
-    fs.writeFileSync(path.join(dir, 'plugin.json'), JSON.stringify({id: 'line-test', name: 'Lines', version: '1.0.0', api: 2}));
+    fs.writeFileSync(path.join(dir, 'plugin.json'), JSON.stringify({id: 'line-test', name: 'Lines', version: '1.0.0', api: 1}));
     const main = path.join(dir, 'main.js');
     fs.writeFileSync(main, 'exports.activate = api => {\n  return undefined;\n};\n');
     const lf = Manifest.exportPackage(Manifest.normalizePackage(readSource(dir)));
@@ -56,8 +56,8 @@ test('five reference plugins build from source with valid manifests', () => {
   for (const [index, slug] of slugs.entries()) {
     const record = Manifest.normalizePackage(readSource(path.join(ROOT, slug)));
     assert.equal(record.id, expectedIds[index], slug);
-    assert.equal(record.api, 2);
-    const packet = JSON.parse(fs.readFileSync(path.join(ROOT, slug, `${record.id}-${record.version}.agentsys-plugin.json`), 'utf8'));
+    assert.equal(record.api, 1);
+    const packet = JSON.parse(fs.readFileSync(path.join(ROOT, slug, `${record.id}.agentsys-plugin.json`), 'utf8'));
     assert.deepEqual(packet, Manifest.exportPackage(record), `${slug} shipped package matches its source and metadata`);
     assert.match(record.version, /^\d+\.\d+\.\d+/);
     assert.ok(record.capabilities.length, `${slug} declares what it uses`);
@@ -121,10 +121,10 @@ test('the reference plugins exercise every required extension point', () => {
 test('the generated distribution files validate and are not part of the source bundle', () => {
   for (const slug of slugs) {
     const record = Manifest.normalizePackage(readSource(path.join(ROOT, slug)));
-    const file = path.join(ROOT, slug, `${record.id}-${record.version}.agentsys-plugin.json`);
+    const file = path.join(ROOT, slug, `${record.id}.agentsys-plugin.json`);
     assert.ok(fs.existsSync(file), `${slug} was built with tools/plugin-pack.js`);
     const packet = JSON.parse(fs.readFileSync(file, 'utf8'));
-    assert.equal(packet.format, 2);
+    assert.equal(packet.format, 1);
     assert.equal(packet.manifest.id, record.id);
     assert.equal(packet.checksum, Manifest.fingerprint(record));
     const again = Manifest.normalizePackage(packet);
@@ -142,10 +142,10 @@ test('the documented example project builds into a valid package', () => {
   const source = readSource(path.join(__dirname, '..', 'examples', 'hello-plugin'));
   const record = Manifest.normalizePackage(source);
   assert.equal(record.id, 'hello-agent');
-  assert.equal(record.api, 2);
+  assert.equal(record.api, 1);
   assert.match(record.source, /commands\.register/);
   const packet = JSON.parse(
-    fs.readFileSync(path.join(__dirname, '..', 'examples', 'hello-plugin', 'hello-agent-1.0.0.agentsys-plugin.json'), 'utf8')
+    fs.readFileSync(path.join(__dirname, '..', 'examples', 'hello-plugin', 'hello-agent.agentsys-plugin.json'), 'utf8')
   );
   assert.equal(packet.manifest.id, 'hello-agent');
   assert.equal(packet.checksum, Manifest.fingerprint(record));

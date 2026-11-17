@@ -888,7 +888,7 @@ function setMinimapHidden(hidden, save = true) {
   toggle.setAttribute('aria-label', toggle.title);
   toggle.setAttribute('aria-expanded', String(!hidden));
   $('#minimap').inert = hidden;
-  if (save) store.set('agentsys-minimap-hidden', hidden);
+  if (save) store.set('agentsys.client.v1.minimap-hidden', hidden);
   if (!hidden) drawMinimap();
 }
 

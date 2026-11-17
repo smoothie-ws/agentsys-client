@@ -17,9 +17,8 @@ const PluginFrame = (() => {
       assets: plugin.assets || {},
       lifecycle: {
         hook: context?.hook || 'activate',
-        from: context?.from || null,
-        to: context?.to || plugin.version,
-        dataVersion: Number(context?.dataVersion) || 0,
+        previousChecksum: context?.previousChecksum || null,
+        checksum: context?.checksum || plugin.checksum,
       },
     }).replace(/</g, '\\u003c');
     return `<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; media-src data: blob:; connect-src 'none'; frame-src 'none'; child-src 'none'; worker-src 'none'; form-action 'none'; base-uri 'none'"><script>
@@ -231,21 +230,18 @@ const PluginFrame = (() => {
       return api.onDidChange(listener);
     },
   };
-  let dataVersion = plugin.lifecycle.dataVersion;
   try {
     exportsObject = loadModule(plugin.main);
     if (typeof exportsObject.activate !== 'function') throw new Error('The plugin must export activate(api)');
     const run = async () => {
       const context = {...plugin.lifecycle};
       if (context.hook === 'install' && typeof exportsObject.onInstall === 'function')
-        dataVersion = (await exportsObject.onInstall(api, context)) ?? dataVersion;
+        await exportsObject.onInstall(api, context);
       if (context.hook === 'update' && typeof exportsObject.onUpdate === 'function')
-        dataVersion = (await exportsObject.onUpdate(api, context)) ?? dataVersion;
-      if (context.hook === 'update' && typeof exportsObject.migrate === 'function')
-        dataVersion = (await exportsObject.migrate(api, context)) ?? dataVersion;
+        await exportsObject.onUpdate(api, context);
       const dispose = await exportsObject.activate(api);
       if (typeof dispose === 'function') exportsObject.__activateDispose = dispose;
-      parent.postMessage({__agentsys: 'plugin', kind: 'ready', ok: true, dataVersion}, '*');
+      parent.postMessage({__agentsys: 'plugin', kind: 'ready', ok: true}, '*');
     };
     run().catch(error => parent.postMessage({__agentsys: 'plugin', kind: 'ready', error: error.message || String(error)}, '*'));
   } catch (error) {

@@ -4,7 +4,7 @@
 function toggleSidebar(expand, persist = true) {
   const mobile = matchMedia('(max-width: 760px)').matches,
     className = mobile ? 'mobile-sidebar-hidden' : 'sidebar-hidden',
-    key = mobile ? 'agentsys-mobile-sidebar-collapsed' : 'agentsys-sidebar-collapsed';
+    key = mobile ? 'agentsys.client.v1.mobile-sidebar-collapsed' : 'agentsys.client.v1.sidebar-collapsed';
   expand ??= document.body.classList.contains(className);
   document.body.classList.toggle(className, !expand);
   if (persist) store.set(key, !expand);
@@ -14,8 +14,8 @@ const narrowSidebar = matchMedia('(max-width: 900px)');
 function restoreSidebar() {
   const mobile = matchMedia('(max-width: 760px)').matches;
   toggleSidebar(mobile
-    ? !store.get('agentsys-mobile-sidebar-collapsed', false)
-    : !narrowSidebar.matches && !store.get('agentsys-sidebar-collapsed', true), false);
+    ? !store.get('agentsys.client.v1.mobile-sidebar-collapsed', false)
+    : !narrowSidebar.matches && !store.get('agentsys.client.v1.sidebar-collapsed', true), false);
 }
 store.ready.then(restoreSidebar).catch(fail);
 narrowSidebar.addEventListener('change', restoreSidebar);
@@ -33,7 +33,7 @@ addEventListener('beforeunload', event => {
   }
   if (!dirty) return;
   event.preventDefault();
-  // Supply a nonempty legacy returnValue as well; browsers choose their own confirmation text.
+  // Supply a nonempty returnValue as well; browsers choose their own confirmation text.
   event.returnValue = 'Unsaved changes';
 });
 
@@ -117,7 +117,7 @@ function panelResize(panel, {edge, key, initial, min, max, setWidth, collapse, e
     RAIL = 56,
     MIN = 180,
     MAX = 420,
-    key = 'agentsys-sidebar-width';
+    key = 'agentsys.client.v1.sidebar-width';
   let width = Number(store.get(key)) || 232;
   const setWidth = value => {
     width = clamp(value, MIN, MAX);
@@ -177,7 +177,7 @@ function syncSubnavToggle() {
 }
 function toggleSubnav(expand = document.body.classList.contains('subnav-collapsed')) {
   document.body.classList.toggle('subnav-collapsed', !expand);
-  store.set('agentsys-subnav-collapsed', !expand);
+  store.set('agentsys.client.v1.subnav-collapsed', !expand);
   syncSubnavToggle();
 }
 $('#toggle-subnav').onclick = () => {
@@ -187,12 +187,12 @@ $('#toggle-subnav').onclick = () => {
   const body = document.body;
   store.ready
     .then(() => {
-      toggleSubnav(!store.get('agentsys-subnav-collapsed', false));
+      toggleSubnav(!store.get('agentsys.client.v1.subnav-collapsed', false));
     })
     .catch(fail);
   const handle = panelResize($('#subnav'), {
     edge: 'right',
-    key: 'agentsys-subnav-width',
+    key: 'agentsys.client.v1.subnav-width',
     initial: 232,
     min: 170,
     max: 420,
@@ -332,7 +332,6 @@ const ENVIRONMENT_LABEL = {
   connecting: 'Connecting',
   disconnected: 'Disconnected',
   unauthorized: 'Unauthorized',
-  incompatible: 'Incompatible version',
   error: 'Connection error',
 };
 let lastEnvironmentStatus = null;
@@ -361,7 +360,6 @@ async function chooseEnvironment(id) {
 
 const stateMessage = state => {
   if (state.status === 'unauthorized') return 'This server requires a token. Add it on the Server page.';
-  if (state.status === 'incompatible') return state.detail || 'This client and server speak different protocol versions.';
   if (state.status === 'disconnected') return state.detail || 'The server could not be reached.';
   return state.detail || 'The server is not connected.';
 };

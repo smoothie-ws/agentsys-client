@@ -7,7 +7,7 @@ No Node.js or server package is required. HTTPS clients require HTTPS API URLs.
 For the optional local CLI (Node.js 22+):
 
 ```sh
-npm install -g ./agentsys-client-0.7.0.tgz
+npm install -g ./agentsys-client-0.1.0.tgz
 agentsys-client serve --port 8081
 ```
 

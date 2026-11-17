@@ -73,15 +73,14 @@ function readSource(directory) {
     description: meta.description || '',
     icon: meta.icon || 'plug',
     api: meta.api || Manifest.API_VERSION,
-    engines: meta.engines || {agentsys: '>=0.3.0'},
     capabilities: meta.capabilities || [],
-    dependencies: meta.dependencies || {},
+    dependencies: meta.dependencies || [],
     author: meta.author || '',
     license: meta.license || '',
     homepage: meta.homepage || '',
   };
   return {
-    format: 2,
+    format: 1,
     manifest,
     main,
     files,
@@ -92,11 +91,11 @@ function readSource(directory) {
 
 function build(directory, out) {
   const source = readSource(directory);
-  // The same validation the client runs, including file paths, engines and contributions.
+  // The same validation the client runs, including file paths, dependencies and contributions.
   const record = Manifest.normalizePackage(source);
   const packet = Manifest.exportPackage(record);
   packet.checksum = Manifest.fingerprint(record);
-  const target = out || path.join(directory, `${record.id}-${record.version}.agentsys-plugin.json`);
+  const target = out || path.join(directory, `${record.id}.agentsys-plugin.json`);
   fs.writeFileSync(target, JSON.stringify(packet, null, 2) + '\n');
   const summary = [
     `built ${record.id} ${record.version}`,

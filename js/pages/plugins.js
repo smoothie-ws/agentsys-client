@@ -28,8 +28,7 @@ const setPluginEnabled = async (id, enabled) => {
 };
 
 const dependencyText = plugin => {
-  const entries = Object.entries(plugin.dependencies || {});
-  return entries.length ? entries.map(([id, range]) => `${id} ${range}`).join(', ') : 'none';
+  return (plugin.dependencies || []).join(', ') || 'none';
 };
 
 const pluginActions = plugin =>
@@ -62,7 +61,7 @@ function removePlugin(plugin) {
 
 const pluginCard = p => {
   const uiError = typeof Extensions === 'undefined' ? '' : Extensions.errorOf(p.id);
-  const deps = Object.keys(p.dependencies || {}).length;
+  const deps = (p.dependencies || []).length;
   return card({
     href: '/plugins/' + encodeURIComponent(p.id),
     glyph: p.icon || 'plug',
@@ -127,7 +126,7 @@ function pluginEditor(plugin = {}) {
   return `<form id="plugin-editor" class="stack">
     ${field('Id', `<input name="id" required value="${esc(plugin.id || '')}" ${plugin.id ? 'readonly' : ''} placeholder="my-plugin" autocomplete="off">`)}
     ${field('Title', `<input name="title" required maxlength="120" value="${esc(plugin.title || '')}" placeholder="My plugin">`)}
-    ${field('Version', `<input name="version" required value="${esc(plugin.version || '1.0.0')}" placeholder="1.0.0" autocomplete="off">`)}
+    ${field('Version label', `<input name="version" value="${esc(plugin.version || '0.1.0')}" placeholder="0.1.0" autocomplete="off">`)}
     ${field('Description', `<textarea name="description" rows="2" maxlength="2000">${esc(plugin.description || '')}</textarea>`)}
     ${field('Icon', `<input name="icon" value="${esc(plugin.icon || 'plug')}" placeholder="plug">`)}
     ${field('Source', `<textarea name="source" rows="16" spellcheck="false" required placeholder="exports.activate = async api => { ... }">${esc(plugin.source || '')}</textarea>`)}
@@ -140,10 +139,12 @@ function pluginEditor(plugin = {}) {
 function installPluginDialog() {
   dialog(
     'Install client plugin',
-    `${pluginEditor()}<p class="muted small">You can also import a <code>.json</code> package with the same fields, or an exported format 2 package with modules and contributions.</p><div class="button-row"><button type="button" data-plugin-import>Import JSON file…</button></div>`,
+    `${pluginEditor()}<p class="muted small">Import a <code>.agentsys-plugin.json</code> package to include modules, assets and resource contributions.</p><div class="button-row"><button type="button" data-plugin-import>Import JSON file…</button></div>`,
     async form => {
       try {
         const plugin = await Extensions.install({
+          api: PluginManifest.API_VERSION,
+          formatVersion: PluginManifest.FORMAT_VERSION,
           id: form.elements.id.value,
           title: form.elements.title.value,
           version: form.elements.version.value,

@@ -2,7 +2,7 @@
 'use strict';
 const phoneLayout = matchMedia('(max-width: 760px)');
 /** Whether the canvas side panel is hidden: the phone layout remembers its own choice; unless chosen, narrow screens start with it hidden. */
-const sideHiddenKey = () => (phoneLayout.matches ? 'agentsys-side-hidden-mobile' : 'agentsys-side-hidden');
+const sideHiddenKey = () => (phoneLayout.matches ? 'agentsys.client.v1.side-hidden-mobile' : 'agentsys.client.v1.side-hidden');
 const sideHidden = () => store.get(sideHiddenKey(), phoneLayout.matches || $('#view').clientWidth < 800);
 for (const link of $$('#sidebar [data-section]')) link.setAttribute('aria-label', SECTION_TITLES[link.dataset.section]);
 let desktopSubnavFolded = document.body.classList.contains('subnav-collapsed');
@@ -109,7 +109,7 @@ updatePhoneLayout();
 store.ready
   .then(() => {
     if (phoneLayout.matches) {
-      desktopSubnavFolded = store.get('agentsys-subnav-collapsed', false);
+      desktopSubnavFolded = store.get('agentsys.client.v1.subnav-collapsed', false);
       document.body.classList.remove('subnav-collapsed');
       syncSubnavToggle();
     }

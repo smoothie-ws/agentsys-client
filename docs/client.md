@@ -78,7 +78,7 @@ Only the latest render releases that state.
 
 ## Connection states
 
-`connected`, `connecting`, `disconnected`, `unauthorized`, `incompatible`, `error`. They are shown by the dot
+`connected`, `connecting`, `disconnected`, `unauthorized`, `error`. They are shown by the dot
 beside the server name in the sidebar and on the Server page, with an actionable message
 ("Add its token", "Update the server", "The server could not be reached").
 

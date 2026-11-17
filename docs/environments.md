@@ -25,8 +25,7 @@ Open the **Server** row in the left sidebar, just above **Settings** (it shows t
 
 Tokens are stored in `sessionStorage`, per tab and exact server URL. Editing a saved address does not transfer
 its credential. Reconnect applies a changed address through the normal save guards; enter a new token explicitly
-if that endpoint requires one. Token fields are never prefilled. Legacy tab tokens are bound to their original
-saved URL before an address edit. They are never written to `localStorage`, never put in a URL
+if that endpoint requires one. Token fields are never prefilled. They are never written to `localStorage`, never put in a URL
 and never shown again by the client. A token is exchanged for an HttpOnly session cookie; plugin code cannot
 read either.
 
@@ -57,13 +56,13 @@ one server's settings do not appear on another.
 | Connecting | Probe, auth or initial state load in progress. |
 | Disconnected | Network failure, server stopped, or SSE lost; reconnect is retried. |
 | Unauthorized | The server requires a token or rejected the session. |
-| Incompatible version | The server speaks another protocol version; update one side. |
+| Connection error | The server does not provide the API 1 contract. |
 | Connection error | Any other transport/protocol error, with the message shown. |
 
 ## Scenarios covered by tests
 
 - Client on a PC → local server.
-- Client → LAN/VPS over HTTP with exact CORS (HTTPS documented in [deployment.md](deployment.md)).
+- Client → LAN/VPS over HTTP with exact CORS (HTTPS documented in [installation](../INSTALLATION.md)).
 - Two clients → one server (shared SSE and change notifications).
 - Closing the client while a workflow runs; reopening and seeing the result.
 - Server restart; client reconnects and reads the stored state.

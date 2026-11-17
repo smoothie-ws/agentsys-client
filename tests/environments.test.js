@@ -85,7 +85,7 @@ function makeEnvironment(handler, defaultServer = 'http://client.test') {
   return {Environment, requests, localStorage, sessionStorage, context};
 }
 
-const meta = {agentsys: true, product: Protocol.PRODUCT, protocol: Protocol.PROTOCOL, auth: 'loopback'};
+const meta = {agentsys: true, product: Protocol.PRODUCT, protocol: Protocol.PROTOCOL, api_version: '1.0', auth: 'loopback'};
 const API = Protocol.META_PATH;
 
 /** A server that answers discovery, the session probe and changes; nothing needs authentication. */
@@ -164,7 +164,7 @@ test('a token stays in this tab, is sent as a bearer header and is exchanged for
   const saved = Environment.save({name: 'Remote', url: 'https://agentsys.example.com', token: 'good'});
   assert.equal(saved.id.startsWith('env-'), true);
   assert.equal(await Environment.setActive(saved.id), true);
-  assert.equal(sessionStorage.getItem('agentsys-token:' + saved.id + '@' + encodeURIComponent(saved.url)), 'good');
+  assert.equal(sessionStorage.getItem('agentsys.client.v1.token:' + saved.id + '@' + encodeURIComponent(saved.url)), 'good');
   assert.equal([...localStorage._data.keys()].some(key => key.startsWith('agentsys-token')), false, 'a token never reaches localStorage');
   const session = requests.find(request => request.url.includes('/api/auth/session'));
   assert.equal(session.method, 'POST');
@@ -309,16 +309,16 @@ test('removing the active environment disconnects it and connects the next one',
   assert.equal(state.meta.product, Protocol.PRODUCT);
 });
 
-test('an incompatible server is reported as such and is not used', async () => {
+test('an unsupported server contract is refused before API calls', async () => {
   const {Environment} = makeEnvironment((request) => {
     if (request.url.includes(API)) return {body: {...meta, protocol: Protocol.PROTOCOL + 1}};
     return {body: {}};
   });
   assert.equal(await Environment.start(), false);
-  assert.equal(Environment.status().status, 'incompatible');
-  assert.match(Environment.status().detail, /protocol/i);
+  assert.equal(Environment.status().status, 'error');
+  assert.match(Environment.status().detail, /API 1/i);
   // A request to a server of another protocol is refused before it is sent.
-  await assert.rejects(Environment.request('GET', 'projects'), error => error.code === 'incompatible_protocol');
+  await assert.rejects(Environment.request('GET', 'projects'), error => error.code === 'unsupported_contract');
 });
 
 test('an address without a scheme, with credentials or with a path is refused', async () => {  const {Environment} = makeEnvironment(plainServer);
@@ -570,8 +570,8 @@ test('editing a server URL never forwards the old credential to the new endpoint
   const env = Environment.save({name: 'Original', url: 'http://original.test', token: 'old-secret'});
   await Environment.setActive(env.id);
   // Simulate a tab opened by the previous release, whose credential had no URL in its key.
-  sessionStorage.removeItem('agentsys-token:' + env.id + '@' + encodeURIComponent(env.url));
-  sessionStorage.setItem('agentsys-token:' + env.id, 'old-secret');
+  sessionStorage.removeItem('agentsys.client.v1.token:' + env.id + '@' + encodeURIComponent(env.url));
+  sessionStorage.setItem('agentsys.client.v1.token:' + env.id, 'old-secret');
   Environment.save({...env, url: 'http://replacement.test'});
   let flushed = 0;
   Environment.onBeforeSwitch(() => { flushed++; });
@@ -608,10 +608,13 @@ test('a fresh static installation stays disconnected until a server is supplied'
   assert.equal(requests.length, 0);
   await assert.rejects(Environment.request('GET', 'projects'), {code: 'disconnected'});
 });
-test('API compatibility accepts minor additions independently of application releases', () => {
-  assert.equal(Protocol.compatibleAPI('2.0'), true);
-  assert.equal(Protocol.compatibleAPI('2.42'), true);
-  for (const value of ['3.0', '1.9', '', null, '2.x']) assert.equal(Protocol.compatibleAPI(value), false);
+test('only the first explicit API contract is accepted', async () => {
+  for (const api_version of ['2.0', '1.1', '', null]) {
+    const {Environment, requests} = makeEnvironment(() => ({body: {...meta, api_version}}));
+    assert.equal(await Environment.start(), false);
+    await assert.rejects(Environment.request('GET', 'projects'), {code: 'unsupported_contract'});
+    assert.equal(requests.length, 1);
+  }
 });
 
 test('optional session and SSE features can be absent while bearer REST stays usable', async () => {

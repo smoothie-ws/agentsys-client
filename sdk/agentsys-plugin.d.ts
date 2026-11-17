@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-// AgentSys client plugin SDK — public TypeScript declarations (API version 2).
+// AgentSys client plugin SDK — public TypeScript declarations (API version 1).
 //
 // TypeScript is optional. A plugin is ordinary JavaScript: `exports.activate = api => { ... }` runs in the
 // sandboxed host. These declarations exist for editors and for projects that choose TypeScript; there is no build
@@ -24,26 +24,21 @@ export type Capability =
   | `secrets.use:${string}`
   | `net.fetch:${string}`;
 
-export interface SemverRange {
-  [pluginId: string]: string;
-}
 
 export interface PluginManifest {
   /** Stable id: letters, digits, ".", "_" or "-", at most 80 characters. */
   id: string;
   name: string;
-  /** Semantic version, such as "1.2.0". */
+  /** Display label, default "0.1.0". Content checksums determine updates. */
   version: string;
   description?: string;
   /** A built-in icon name, such as "sparkles", "database" or "plug". */
   icon?: string;
   /** The supported plugin API. */
-  api: 2;
-  /** AgentSys version range, for example {agentsys: ">=0.3.0 <1.0.0"}. */
-  engines?: {agentsys?: string};
+  api: 1;
   capabilities?: Capability[];
-  /** Other client plugins this plugin needs. Ranges use semver: ^1.2.0, ~1.2.0, >=1.0.0 <2.0.0. */
-  dependencies?: SemverRange;
+  /** Other client plugins this plugin needs. Dependencies are identified by plugin ID. */
+  dependencies?: string[];
   author?: string;
   license?: string;
   homepage?: string;
@@ -88,7 +83,7 @@ export interface PluginContributions {
 }
 
 export interface PluginPackage {
-  format: 2;
+  format: 1;
   manifest: PluginManifest;
   main?: string;
   /** Path -> text. Only relative .js and .json paths; modules use require('./relative') inside the package. */
@@ -101,12 +96,9 @@ export interface PluginPackage {
 }
 
 export interface LifecycleContext {
-  /** "install" the first time this version activates, "update" after a version change, "activate" otherwise. */
-  hook: 'install' | 'update' | 'activate';
-  from: string | null;
-  to: string;
-  /** The value returned by onUpdate/migrate last time; 0 for a new plugin. */
-  dataVersion: number;
+  hook: 'install' | 'update' | 'activate' | 'uninstall';
+  previousChecksum: string | null;
+  checksum: string;
 }
 
 export interface PluginStorage {
@@ -394,11 +386,9 @@ export type Deactivate = (api: AgentSysPluginApi) => void | Promise<void>;
 export interface PluginModule {
   activate(api: AgentSysPluginApi): void | Deactivate | Promise<void | Deactivate>;
   deactivate?(api: AgentSysPluginApi): void | Promise<void>;
-  onInstall?(api: AgentSysPluginApi, context: LifecycleContext): unknown | Promise<unknown>;
-  /** Return a new data version, or undefined to keep the old one. */
-  onUpdate?(api: AgentSysPluginApi, context: LifecycleContext): number | void | Promise<number | void>;
-  migrate?(api: AgentSysPluginApi, context: LifecycleContext): number | void | Promise<number | void>;
-  onUninstall?(api: AgentSysPluginApi, context: {version: string}): void | Promise<void>;
+  onInstall?(api: AgentSysPluginApi, context: LifecycleContext): void | Promise<void>;
+  onUpdate?(api: AgentSysPluginApi, context: LifecycleContext): void | Promise<void>;
+  onUninstall?(api: AgentSysPluginApi, context: LifecycleContext): void | Promise<void>;
 }
 
 declare global {

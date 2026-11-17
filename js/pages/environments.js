@@ -8,7 +8,6 @@ const environmentStatusText = state => {
     connecting: 'Connecting',
     disconnected: 'Disconnected',
     unauthorized: 'Unauthorized',
-    incompatible: 'Incompatible version',
     error: 'Connection error',
   };
   return labels[state.status] || state.status;

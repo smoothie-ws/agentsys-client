@@ -75,8 +75,8 @@ A package can declare a template instead of (or in addition to) creating nodes a
 ```
 
 **Deploy resources** creates the project if needed, creates the workflow, places each named Library node and adds a
-native Event trigger wired to the placed nodes (`run: false` skips the trigger). Redeploying the same version is
-idempotent; a new version updates the plugin's own nodes in place. The deployment record remembers project, workflow,
+native Event trigger wired to the placed nodes (`run: false` skips the trigger). Redeploying the same content is
+idempotent; new content updates the plugin's own nodes in place. The deployment record remembers project, workflow,
 node and event ids per environment.
 
 The template is ordinary graph data. When saved, the server can run it from its own runtime with no client and no

@@ -27,7 +27,7 @@ test('the SDK ships TypeScript declarations and a README', () => {
   ]) {
     assert.match(types, new RegExp(member), `the declarations name ${member}`);
   }
-  assert.match(types, /API version 2/);
+  assert.match(types, /API version 1/);
 });
 
 test('every documented plugin guide exists and the index links to it', () => {
@@ -43,7 +43,6 @@ test('every documented plugin guide exists and the index links to it', () => {
     'plugin-packaging',
     'plugin-development',
     'plugin-testing',
-    'plugin-migration',
   ];
   const index = read('docs/plugins.md');
   for (const guide of guides) {

@@ -36,12 +36,12 @@ function setCamera(x, y, zoom) {
     drawMinimap();
   });
   // Saved a moment later; the key and the view are taken now, so opening another workflow in between cannot mix them up.
-  const key = 'agentsys-camera:' + W.workflow,
+  const key = 'agentsys.client.v1.camera:' + W.workflow,
     view = W.camera;
   clearTimeout(W.cameraTimer);
   W.cameraTimer = setTimeout(() => store.set(key, view), 300);
 }
-const loadCamera = () => store.get('agentsys-camera:' + W.workflow);
+const loadCamera = () => store.get('agentsys.client.v1.camera:' + W.workflow);
 function toWorld(clientX, clientY) {
   const rect = W.canvas.getBoundingClientRect(),
     c = W.camera;

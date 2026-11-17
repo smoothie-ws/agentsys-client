@@ -7,7 +7,7 @@
 'use strict';
 
 const PluginStore = (() => {
-  const KEY = 'agentsys-client-plugins';
+  const KEY = 'agentsys.client.v1.client-plugins';
   // Resolve from this script's own URL: it works at the client root, under /editor/ and on a deep editor URL.
   const BUILTIN_URL = (() => {
     try {
@@ -21,7 +21,6 @@ const PluginStore = (() => {
   const ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/;
   const Manifest = PluginManifest;
   const Capabilities = PluginCapabilities;
-  const HOST_VERSION = '0.3.0';
   let loaded = null;
 
   const read = () => {
@@ -54,7 +53,7 @@ const PluginStore = (() => {
     id: item.id,
     title: item.title,
     description: item.description || '',
-    version: item.version || '0.0.0',
+    version: item.version || '0.1.0',
     icon: item.icon || 'plug',
     api: item.api,
     enabled: item.enabled !== false,
@@ -69,8 +68,7 @@ const PluginStore = (() => {
     author: item.author || '',
     license: item.license || '',
     homepage: item.homepage || '',
-    dependencies: {...(item.dependencies || {})},
-    engines: {...(item.engines || {})},
+    dependencies: [...(item.dependencies || [])],
     contributes: item.contributes
       ? {
           collections: (item.contributes.collections || []).map(value => ({...value})),
@@ -80,8 +78,8 @@ const PluginStore = (() => {
       : {collections: [], library: [], workflows: []},
     installedAt: item.installedAt || 0,
     updatedAt: item.updatedAt || 0,
-    activatedVersion: item.activatedVersion || '',
-    dataVersion: item.dataVersion || 0,
+    activatedChecksum: item.activatedChecksum || '',
+    checksum: item.checksum,
     hasModules: !!(item.files && Object.keys(item.files).length),
     assetCount: item.assets ? Object.keys(item.assets).length : 0,
   });
@@ -98,7 +96,7 @@ const PluginStore = (() => {
   const normalize = (value, {allowSource = true} = {}) => {
     let record;
     try {
-      record = Manifest.normalizePackage(value, {hostVersion: HOST_VERSION, apiVersion: Manifest.API_VERSION, allowSource});
+      record = Manifest.normalizePackage(value, {allowSource});
     } catch (error) {
       throw error.code ? error : new ApiError('invalid_request', error.message, 400);
     }
@@ -116,30 +114,10 @@ const PluginStore = (() => {
     }
   };
   /** One storage scope per plugin and active environment. Reserved keys are host bookkeeping. */
-  function bindEnvironment(id, url) {
-    if (!id || !url) return;
-    // Bind the old id-only scope before an address can change. Existing data moves once, to its original server.
-    const key = 'agentsys-plugin-environment-bindings';
-    let bindings;
-    try { bindings = JSON.parse(localStorage.getItem(key) || '{}'); } catch { bindings = {}; }
-    if (!isObject(bindings)) bindings = {};
-    if (Object.hasOwn(bindings, id) && bindings[id] !== url) return;
-    bindings[id] = url;
-    localStorage.setItem(key, JSON.stringify(bindings));
-    const keys = Array.from({length: localStorage.length}, (_, index) => localStorage.key(index));
-    for (const old of keys) {
-      if (!old?.startsWith('agentsys-plugin-') || !old.includes('@' + id + ':')) continue;
-      const next = old.replace('@' + id + ':', '@' + id + '@' + encodeURIComponent(url) + ':');
-      if (localStorage.getItem(next) === null) localStorage.setItem(next, localStorage.getItem(old));
-      localStorage.removeItem(old);
-    }
-  }
-
   function storageFor(id, allowReserved) {
     const env = typeof Environment !== 'undefined' ? Environment.active() : null;
     const server = env?.id || 'none';
-    bindEnvironment(server, env?.url);
-    const prefix = `agentsys-plugin-${id}@${server}${env?.url ? '@' + encodeURIComponent(env.url) : ''}:`;
+    const prefix = `agentsys.client.v1.plugin-${id}@${server}${env?.url ? '@' + encodeURIComponent(env.url) : ''}:`;
     const safeKey = key => {
       const text = String(key).slice(0, 200);
       if (!allowReserved && text.startsWith('__agentsys:'))
@@ -170,7 +148,6 @@ const PluginStore = (() => {
   }
 
   return {
-    HOST_VERSION,
     /** Loads the bundled catalog once; installed plugins win. */
     async load() {
       if (loaded) return loaded;
@@ -220,10 +197,10 @@ const PluginStore = (() => {
       return (loaded || []).map(item => JSON.parse(JSON.stringify(item)));
     },
     /**
-     * Installs a new package or updates one in place. Dependencies and compatibility are checked before anything
+     * Installs a new package or updates one in place. Dependencies and contracts are checked before anything
      * is written. An update keeps the enabled state and the user data; activation is the host's next step.
      */
-    install(value, {allowDowngrade = false, approveCapabilities = false} = {}) {
+    install(value, {approveCapabilities = false} = {}) {
       read();
       const plugin = normalize(value);
       const index = loaded.findIndex(item => item.id === plugin.id);
@@ -237,12 +214,6 @@ const PluginStore = (() => {
         const added = plugin.capabilities.filter(capability => !Capabilities.allows(previous.capabilities, capability));
         if (added.length && !approveCapabilities)
           throw new ApiError('plugin_permissions_required', `This update requires approval for: ${added.join(', ')}.`, 409);
-        if (!allowDowngrade && Manifest.compareVersions(plugin.version, previous.version) < 0)
-          throw new ApiError(
-            'invalid_request',
-            `Installed version ${previous.version} is newer than ${plugin.version}; enable a downgrade explicitly.`,
-            409
-          );
         const next = {
           ...previous,
           ...plugin,
@@ -251,8 +222,7 @@ const PluginStore = (() => {
           origin: plugin.origin || previous.origin || 'installed',
           installedAt: previous.installedAt || now,
           updatedAt: now,
-          activatedVersion: previous.activatedVersion || '',
-          dataVersion: previous.dataVersion || 0,
+          activatedChecksum: previous.activatedChecksum || '',
         };
         next.checksum = Manifest.fingerprint(next);
         loaded[index] = next;
@@ -261,6 +231,7 @@ const PluginStore = (() => {
       }
       plugin.installedAt = now;
       plugin.updatedAt = now;
+      plugin.activatedChecksum = '';
       plugin.checksum = Manifest.fingerprint(plugin);
       loaded.push(plugin);
       write();
@@ -287,13 +258,12 @@ const PluginStore = (() => {
       write();
       return publicPlugin(item);
     },
-    /** Records that this version activated successfully in its current data version. */
-    markActivated(id, version, dataVersion = 0) {
+    /** Records that this package activated successfully. */
+    markActivated(id, checksum) {
       read();
       const item = loaded.find(plugin => plugin.id === id);
       if (!item) return;
-      item.activatedVersion = String(version || item.version);
-      item.dataVersion = Number(dataVersion) || 0;
+      item.activatedChecksum = checksum;
       item.lastActivatedAt = Date.now();
       write();
     },
@@ -303,7 +273,6 @@ const PluginStore = (() => {
       if (!item) throw new ApiError('not_found', 'Plugin not found', 404);
       const packet = Manifest.exportPackage(item);
       packet.exportedAt = new Date().toISOString();
-      packet.exportedBy = 'AgentSys client ' + HOST_VERSION;
       return packet;
     },
     /** Private JSON a plugin keeps in this browser, separated per plugin and per active server. */
@@ -314,10 +283,9 @@ const PluginStore = (() => {
     hostStorage(id) {
       return storageFor(id, true);
     },
-    bindEnvironment,
     clear(id) {
       // Remove every environment scope of this plugin.
-      const prefix = `agentsys-plugin-${id}`;
+      const prefix = `agentsys.client.v1.plugin-${id}`;
       for (let i = localStorage.length - 1; i >= 0; i--) {
         const key = localStorage.key(i);
         if (key === prefix || key?.startsWith(prefix + '@') || key?.startsWith(prefix + ':')) localStorage.removeItem(key);

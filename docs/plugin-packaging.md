@@ -26,8 +26,7 @@ my-plugin/
   "version": "1.0.0",
   "description": "Notes and a custom view.",
   "icon": "database",
-  "api": 2,
-  "engines": {"agentsys": ">=0.3.0 <1.0.0"},
+  "api": 1,
   "capabilities": ["collections.read", "collections.write"],
   "author": "Example",
   "license": "MIT",
@@ -43,8 +42,8 @@ my-plugin/
 ```bash
 node tools/plugin-pack.js my-plugin
 # or
-npm run plugin:pack -- my-plugin
-# writes my-plugin/com.example.notes-1.0.0.agentsys-plugin.json
+node tools/plugin-pack.js my-plugin
+# writes my-plugin/com.example.notes.agentsys-plugin.json
 ```
 
 Options:
@@ -64,14 +63,14 @@ The builder:
 - base64-encodes PNG/JPEG/GIF/WebP files under `assets/`;
 - copies `contributes`;
 - runs the same `PluginManifest.normalizePackage` validation as the client;
-- writes a format 2 package and an FNV-1a checksum.
+- writes a format 1 package and an FNV-1a checksum.
 
 ## Package
 
 ```json
 {
-  "format": 2,
-  "manifest": {"id": "...", "name": "...", "version": "...", "api": 2, "...": "..."},
+  "format": 1,
+  "manifest": {"id": "...", "name": "...", "version": "...", "api": 1, "...": "..."},
   "main": "main.js",
   "files": {"main.js": "...", "lib/view.js": "..."},
   "assets": {"logo": "data:image/png;base64,..."},
@@ -81,14 +80,14 @@ The builder:
 ```
 
 The checksum detects an accidental local edit. It is **not** a cryptographic signature and does not prove who built
-the package. There is no marketplace and no URL installer in this cycle.
+the package. There is no marketplace and no URL installer in this MVP.
 
 ## Install and update
 
 1. Open the **Plugins** page and choose **Install plugin…** from its **⋯** menu.
 2. Write the form for a first experiment, or choose **Import JSON file…** and pick a `.agentsys-plugin.json`.
-3. A package with the same id and a newer semantic version updates in place from the plugin page
-   (**Update from file…**). It keeps the enabled state and private data, runs `onUpdate`/`migrate`, and rolls back on a
+3. A package with the same id and new content updates in place from the plugin page
+   (**Update from file…**). It keeps the enabled state and private data, runs `onUpdate`, and rolls back on a
    start failure.
 4. **Export package** produces the same format with the current modules and contributions, ready to send to another
    user.
@@ -101,8 +100,6 @@ Installing never writes to a server. **Deploy resources** on the plugin page is 
 - Bump the version whenever behaviour, modules, assets or `contributes` change; the deployment record uses it to decide
   whether its nodes need an update.
 - Keep the id stable. A new id is a new plugin with new storage and a new deployment.
-- Declare compatible AgentSys versions with `engines.agentsys`. A package outside the range is refused before any
-  code runs.
 
 ## Dependencies
 

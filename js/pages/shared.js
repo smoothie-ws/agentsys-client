@@ -380,8 +380,8 @@ function loadCardPreviews(view, projectId = null) {
 }
 
 async function loadLibrary() {
-  const [settings, sections] = await Promise.all([api('settings'), api('library/sections')]);
-  app.librarySections = sections;
+  const settings = await api('settings');
+  app.librarySections = [];
   app.resources = settings.resources;
   app.nodeFolders = settings.node_folders || [];
   app.nodeFolderIcons = settings.node_folder_icons || {};

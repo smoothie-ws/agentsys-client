@@ -1,4 +1,4 @@
-// Reference Plugin C: the Generic Collections API, a plugin-drawn resource view and an update migration.
+// Reference Plugin C: the Generic Collections API, a plugin-drawn resource view and schema editing.
 'use strict';
 
 const escape = value =>
@@ -25,7 +25,7 @@ async function settings() {
   const value = await api.settings.get();
   return `<p class="muted">Data version: <strong>${escape(String(value.schemaVersion ?? 0))}</strong></p>
     <p class="muted small">A schema change is a normal collection update; existing records are never deleted.</p>
-    <button type="button" data-command="migrate">Run migration</button>`;
+    <button type="button" data-command="change-schema">Change schema</button>`;
 }
 
 exports.activate = async pluginApi => {
@@ -78,7 +78,7 @@ exports.activate = async pluginApi => {
     api.ui.toast(`Concurrent update: ${conflict} conflict(s) rejected.`);
     return {conflict};
   }, {title: 'Concurrent update'});
-  api.commands.register('migrate', async () => {
+  api.commands.register('change-schema', async () => {
     // The same definition with a stricter schema: existing records stay, new writes are validated against it.
     await api.collections.define(COLLECTION, {
       title: 'Structured notes',
@@ -96,9 +96,9 @@ exports.activate = async pluginApi => {
       },
     });
     const settingsValue = await api.settings.get();
-    await api.settings.set({...settingsValue, schemaVersion: 2});
-    api.ui.toast('Schema migrated to version 2.');
+    await api.settings.set({...settingsValue, schemaExtended: true});
+    api.ui.toast('Collection schema updated.');
     api.ui.refresh();
-    return {schemaVersion: 2};
-  }, {title: 'Run migration'});
+    return {schemaExtended: true};
+  }, {title: 'Change collection schema'});
 };

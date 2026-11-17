@@ -216,7 +216,7 @@ const Inspector = {
     };
     panelResize(root, {
       edge: 'left',
-      key: 'agentsys-inspector-width',
+      key: 'agentsys.client.v1.inspector-width',
       initial: 360,
       min: 280,
       max: Math.max(380, Math.min(760, innerWidth - 240)),

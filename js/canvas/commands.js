@@ -142,14 +142,14 @@ async function copySelection(cut = false) {
     method: 'POST',
     body: wf({node_ids: nodes.map(n => n.id), group_ids: groupIds}),
   });
-  await store.set('agentsys-clipboard', bundle);
+  await store.set('agentsys.client.v1.clipboard', bundle);
   const count = bundle.records.length;
   toast(cut ? 'Cut.' : `Copied ${plural(count || bundle.groups.length, count ? 'node' : 'group')}.`);
   if (cut) await deleteSelection();
 }
 
 async function paste() {
-  const bundle = store.get('agentsys-clipboard');
+  const bundle = store.get('agentsys.client.v1.clipboard');
   if (!bundle) return toast('The clipboard is empty. Copy nodes first.');
   const result = await api(`projects/${W.project}/paste`, {
     method: 'POST',

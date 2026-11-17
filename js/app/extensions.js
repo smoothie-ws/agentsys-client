@@ -3,7 +3,7 @@
 // They talk to the host through a small message API: request(), storage, commands and declarative UI registrations.
 //
 // Lifecycle: a package is installed, enabled, reloaded, updated and removed here. The sandbox runs activate(api),
-// deactivate(api) and the optional onInstall / onUpdate / onUninstall / migrate hooks. Every registration and every
+// deactivate(api) and the optional onInstall / onUpdate / onUninstall hooks. Every registration and every
 // timer belongs to one sandbox and is dropped with it.
 //
 // This is an isolation boundary for convenience plugins, not a hardened boundary against a malicious program:
@@ -52,7 +52,6 @@ const Extensions = (() => {
       this.stopping = false;
       this.requests = new AbortController();
       this.token = null; // a server-issued token scoped to this plugin's capabilities
-      this.dataVersion = Number(plugin.dataVersion) || 0;
       this.onCrash = null;
       this.readyDone = false;
       this.loads = 0;
@@ -90,8 +89,7 @@ const Extensions = (() => {
           else if (data.ok) {
             this.readyDone = true;
             this.startedAt = Date.now();
-            this.dataVersion = Number(data.dataVersion) || this.dataVersion;
-            this.resolveReady({dataVersion: this.dataVersion});
+            this.resolveReady({});
           }
           return;
         }
@@ -508,9 +506,9 @@ const Extensions = (() => {
   async function loadModule(plugin, hook = 'activate', from = null) {
     let sandbox;
     try {
-      const context = {hook, from, to: plugin.version, dataVersion: plugin.dataVersion || 0};
+      const context = {hook, previousChecksum: from, checksum: plugin.checksum};
       sandbox = new PluginSandbox(plugin, context);
-      const ready = await sandbox.start();
+      await sandbox.start();
       sandbox.onCrash = error => {
         errors.set(plugin.id, error.message || String(error));
 
@@ -522,7 +520,7 @@ const Extensions = (() => {
       document.body.classList.add('plugin-' + cssId(plugin.id));
       errors.delete(plugin.id);
 
-      PluginStore.markActivated(plugin.id, plugin.version, ready?.dataVersion);
+      PluginStore.markActivated(plugin.id, plugin.checksum);
       return true;
     } catch (error) {
       sandbox?.dispose();
@@ -537,8 +535,8 @@ const Extensions = (() => {
   }
 
   const hookFor = plugin => {
-    if (!plugin.activatedVersion) return {hook: 'install', from: null};
-    if (plugin.activatedVersion !== plugin.version) return {hook: 'update', from: plugin.activatedVersion};
+    if (!plugin.activatedChecksum) return {hook: 'install', from: null};
+    if (plugin.activatedChecksum !== plugin.checksum) return {hook: 'update', from: plugin.activatedChecksum};
     return {hook: 'activate', from: null};
   };
 
@@ -625,7 +623,7 @@ const Extensions = (() => {
     const problem = errors.get(plugin.id);
     if (problem) {
       // A package that cannot start does not stay installed over a working one.
-      if (previous) PluginStore.install(previous, {allowDowngrade: true, approveCapabilities: true});
+      if (previous) PluginStore.install(previous, {approveCapabilities: true});
       else PluginStore.remove(plugin.id);
       await reload();
       throw new ApiError('plugin_activation_failed', `${plugin.title || plugin.id} could not start: ${problem}`, 500);
@@ -640,7 +638,7 @@ const Extensions = (() => {
     await reload();
     const problem = errors.get(id);
     if (problem) {
-      PluginStore.install(previous, {allowDowngrade: true, approveCapabilities: true});
+      PluginStore.install(previous, {approveCapabilities: true});
       await reload();
       throw new ApiError('plugin_update_failed', `${plugin.title || id} could not be updated: ${problem}`, 500);
     }
@@ -650,7 +648,7 @@ const Extensions = (() => {
   async function uninstall(id) {
     const record = PluginStore.record(id);
     if (!record) throw new ApiError('not_found', 'Plugin not found', 404);
-    await stopModule(id, 'onUninstall', {version: record.version});
+    await stopModule(id, 'onUninstall', {hook: 'uninstall', previousChecksum: null, checksum: record.checksum});
     PluginStore.clear(id);
     PluginStore.remove(id);
     errors.delete(id);

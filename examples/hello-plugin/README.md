@@ -7,7 +7,7 @@ public SDK only.
 node tools/plugin-pack.js examples/hello-plugin
 ```
 
-This writes `examples/hello-plugin/hello-agent-1.0.0.agentsys-plugin.json`. Start AgentSys:
+This writes `examples/hello-plugin/hello-agent.agentsys-plugin.json`. Start AgentSys:
 
 ```bash
 npm start
