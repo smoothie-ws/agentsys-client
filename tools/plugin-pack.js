@@ -11,7 +11,7 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
-const Manifest = require('../js/app/plugin-manifest');
+const Manifest = require('../js/plugins').PluginManifest;
 
 const MAX_TOTAL = 900000;
 const ASSET_TYPES = {

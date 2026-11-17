@@ -1,0 +1,801 @@
+/* tokens */
+/* Design tokens, reset and base typography.
+   Four theme colours (Settings → Appearance) provide automatic tones. */
+:root {
+  --background: #06080b;
+  --surface: #14181f;
+  --text: #e9ebf1;
+  --accent: #ff7a45;
+  --on-accent: #1a1006;
+  --nav-radius: 15px; /* highlights of the open row, tabs, the bottom rails */
+  --font: 'Inter', 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', 'Cascadia Code', Consolas, 'SFMono-Regular', monospace;
+  --font-size: 14px;
+
+  /* Tones */
+  --panel: color-mix(in srgb, var(--surface) 55%, var(--background)); /* sidebar, side panel */
+  --card: color-mix(in srgb, var(--surface) 70%, var(--background)); /* cards, nodes at rest */
+  --field: color-mix(in srgb, var(--text) 8%, transparent); /* controls at rest */
+  --well: color-mix(in srgb, var(--background) 60%, var(--surface)); /* code and preview wells */
+  --hover: color-mix(in srgb, var(--text) 16%, transparent);
+  --press: color-mix(in srgb, var(--text) 24%, transparent);
+  --line: color-mix(in srgb, var(--text) 9%, transparent); /* the only hairline: menu separators */
+  --muted: color-mix(in srgb, var(--text) 58%, var(--background));
+  --idle: color-mix(in srgb, var(--text) 36%, var(--background));
+  --soft: color-mix(in srgb, var(--accent) 16%, transparent);
+  --current: color-mix(
+    in srgb,
+    var(--accent) 26%,
+    transparent
+  ); /* the open / selected item: clearly stronger than --hover */
+  --ring: color-mix(in srgb, var(--accent) 42%, transparent);
+  --ok: #37c793;
+  --bad: #fd5d72;
+  --warn: #f3c04c;
+
+  /* Port types: used by wires and sockets */
+
+  /* Glass: light, translucent surfaces with a gentle blur. "Effects" off makes everything solid and flat. */
+  --glass: color-mix(in srgb, var(--surface) 30%, transparent); /* sidebar, side panel */
+  --glass-card: color-mix(in srgb, var(--surface) 42%, transparent); /* cards, nodes */
+  --canvas-bg: color-mix(in srgb, var(--surface) 18%, transparent);
+  --grid-colour: color-mix(in srgb, var(--text) 18%, transparent);
+  --float: color-mix(in srgb, var(--surface) 84%, transparent); /* menus, dialogs, toasts */
+  --blur: blur(10px) saturate(1.2);
+  --blur-sm: blur(5px) saturate(1.15);
+  /* Background glow: an eased radial gradient (many soft stops) plus the dither below, so the 8-bit steps never show as rings. */
+  --glow: radial-gradient(
+    ellipse 1000px 720px at 50% -6%,
+    color-mix(in srgb, var(--accent) 4.2%, transparent),
+    color-mix(in srgb, var(--accent) 3.4%, transparent) 15%,
+    color-mix(in srgb, var(--accent) 2.5%, transparent) 30%,
+    color-mix(in srgb, var(--accent) 1.6%, transparent) 46%,
+    color-mix(in srgb, var(--accent) 0.8%, transparent) 62%,
+    color-mix(in srgb, var(--accent) 0.25%, transparent) 80%,
+    transparent
+  );
+  /* Dither: a tiny tile of random white and black specks at 1-2 levels of brightness. Gradients and glass panels carry it as their top layer, so the
+     8-bit steps of a long, quiet ramp dissolve into grain instead of showing as bands (an indexed PNG: about 2 KB, no SVG filter to rasterize). */
+  --dither: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgAgMAAACf9p+rAAAADFBMVEX///8AAACAgIAAAAC6gxA8AAAABHRSTlMCBgAAHRfSowAAB5JJREFUeNoNldHOgQAYhj8NU0d+o6WjNFq6CgxTRzSMjtRo1VVgatURjVYdVUurrvJ3A9/B877P+8Fq0z597WZ/8hFwWx6HklLISBNPQKtNJa0SYdK5CevVcJkwQtVFoidgEefpGsatc63W2V/mg4+M6v6+AK3NsanUIzZeTGkMytH7OhzmKAG+ZKwprtbxNptaXfq6XGIYNSb7gt36Gtc3Zq6SbEBEwx7OFsc1XTegdGKT/SDCZKLvWlqjGC+LZiWOMWispGd2jg9ZQE8TiizZT83WcUKDVpbOCnLhlgcKj/tkYV5H58KAEDyrTRB8477cZXd1mq7lOItsrYcBYX4uw2zadRduqiW21UDSvj92zmDnE7/11/WQbBQNZgRjcuNnsziycC29yrjQyKTC0xgrWutRhJ9tDAec8riPjcqGmLxucVcYlNQyZHwBKp80o7E8xnVFmeIzb/ZlMv4xa4CepvfrMK1SdTLfj35ILu5FPrwN2KQvrCqda5ntEvSlrxC6dS9ylgVloejGLC/VopFm1ZLNxqy+Hq09MGfvKAbVHJRCragwqz2x6YQ7XsFrvxR2YrTs5+vBotgziPj7osepMN5eqdshXi+Jr/8ykuS9rgpbO8jwmrRJ5TjdmDSKY3hZFs6lPOy+f8AXJ+ny0Xu6LmfVc51bciBeWs0YQmTHnPJItk6rxWyCUpalzJ2VycCW6dUHFeI797hBBOc4pp04Kkc2JFlXaHi4ItWRxSR9zasry3H8vgnVenValSPptpYqt2+hox1KLf7mKrjD4NaOIiYpLLaPdPhieX9HnekOuqcbblVCHm4u9dH6GDZVAh5FkQFphZ0t706cfVBmJ92u8Vgr9GkZjBo2YBNlz7g/rsb9MZM7wyMHPRCk72WVTopQ8cd+SF/QA1NotbcO2nvbfrjkwvq4509yvBh8THmeZALFb4rGzumJY5V4hLGNKXdqG2Qy9O2yb61ZSxOp5WZwYJ7m3wZRVAq6D40og/cvEilNBbeSHJda5pUAUjtcXiMa5Y72TO4bjK4rfiF0NTAro/myp4nZuBu8drb9Wk6WX0+CP11Mo4rDfqJQOPWhve5XLB/6HEaUUSHJuPlk8gZSRjWBJ0+vRmZC6s3IXwhFK+2k6mnurnjBdK8fAypXkTdV0c5L5qAaCEbGVH6ukxQcHbtoBeiTVrqD69Gtn6aNZ+S0UDCHz9crLW/XmTpQbW/fGZyoQ8NwgMKkZ3Rf4eOkSCwnho0/t6pUyIBAkLu5hfT9DBIOrd8ULLlWPiXA9HhbSZKFEeNOq3Zf33PrPiS8pQdlsmXSyjEjN90n9auZR+eLJg3OoLPfRFaC6GSc88Y0FsjUwchTH2CjzrGdJ+jLJL9gvctX2y8pCsuHkOUQcxfsKluS9FQ81XhXOb1KL2CjLmF987MdeB0zb3UDt/QKY9QAnE8+EOm5Uheq21tF6KNLGYUPIO/qds+VaqOTNEm7WXDDVmeyG2QgKA9VmaVWM4peu+lB8DZ5T+NiHgphU+2RiB9NlxrLbvWGMhCYzvcOMmyD/ejp7Y+CqGJv1t7K0fJSuGB7utO+ckHBOB77/HDLt8+gG1oDN7/Npj0F5S3RYmGh1QtG3L/CDVjuK022jkIvFu/oRJyk7sWW28BDyzkF89kQP1RsSVmD+FOKpVt8KqjPmLm4QtYRnf8x0ZGsjmwsaTcc9J7/aJZzU3wVaSIcAylM7IT5tV2OlcPUE1i2iowpmz4DgsY2nNz6iXNo9nXuLQWlq4j2Put9Rotz04F1/rqxkzAU5EFJq4HpnR+cdth4QHVcoaus6g1JF92Bz1B1F/U1pQBXZS6dyHVO1ziT6XTjNC+3eZTjQF4ryV/sDqN1ImBiktGRyfYU3YLn8kWdGp+cmV2aPLImi9o7swMsBnqJrRr6gGWz5+JghMi2EsSLHonwdHZUdbVIMVd9JdB/W703buS1Ae9y6mZsjxHlQm3tU0K0n3lm+APgey0OnZ9un/5d8fyXLowjQor/HAipM/sx4nIoJtw1e0SGfeBDQ1/DLE1m8UI9x9QUdmOU3VSztJMTK8C0CdloDo5SVIijynlvp7smfur5EI6Y4e1OOmGd6Y5LqscbJqvjLQfsWrCRoBo/uRYdlC30J8G+F3TfUNA+OWEu/Y6EvmKv6rPkY14xqxB0gqCX7tk6bji6iLpfax09lh77hUi4HyyurHC7c/S7fZq6iA3nw5uQQYAIet/dotW9nDOdEd6kXh9+BmFrUvHO3++Ml5f6jcb2O/dNjk3wN+HgOvx7/Tgk/XQ/yCn7T3U3KARBSIS/l5+whzSy8/I7K+UHnR7hSjvC+dxeffORMbaS0QGxyjrRZqG4s/SjGh/b2k6Pt7mrj4zH39CLwZ0+qhpiEyF6TTtx6ueLTU4KLwOUdWHQS2tcy+VWd3homsWubyg1G6qgIIlyjUYvZR+JxgvtYKOF+r2CJK4Ipsk9UCRCjhpf6nT1fGFfCag8Gm65U3fmGKnh4/r3pJzFtdyHVLc/Qgu/CjU85zA7K/WR7lffLgSGcJRUY09EWbEznGMYR+F3P3Z/bW90I14dZ/6wdvvJ8SC/vrSViX9iV0RsK+y3QQAAAABJRU5ErkJggg==');
+  --noise: var(--dither); /* the page background's copy of it; Effects off clears it */
+  --page-tone: color-mix(
+    in srgb,
+    var(--text) 2.6%,
+    transparent
+  ); /* the page background sits a touch toward the text colour, as the old grain did: dark pages a little lifted, light ones a little deeper */
+  --shadow-a: 0.5;
+  --shadow: 0 8px 28px -10px rgb(0 0 0 / var(--shadow-a));
+  --shadow-lg: 0 24px 60px -18px rgb(0 0 0 / calc(var(--shadow-a) + 0.15));
+
+  --radius: 15px;
+  --ease: cubic-bezier(0.25, 0.9, 0.3, 1);
+  --fast: 0.16s;
+  --base: 0.22s;
+  --slow: 0.32s;
+  --lift: 0 6px 16px -8px rgb(0 0 0 / calc(var(--shadow-a) + 0.1));
+  --card-shadow: 0 6px 20px -8px rgb(0 0 0 / var(--shadow-a)); /* a node of the canvas and a card of a page */
+  color-scheme: dark;
+}
+[data-theme='light'] {
+  color-scheme: light;
+  --ok: #1f8f66;
+  --bad: #c6394c;
+  --warn: #9a6a0a;
+  --shadow-a: 0.16;
+  --dither: url('data:image/png;base64,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'); /* on a light page the specks are mostly white-on-light-grey, so the weights swap */
+}
+[data-effects='false'] {
+  --glass: var(--panel);
+  --glass-card: var(--card);
+  --canvas-bg: color-mix(in srgb, var(--surface) 28%, var(--background));
+  --float: var(--surface);
+  --glow: linear-gradient(transparent, transparent);
+  --noise: linear-gradient(transparent, transparent);
+  --page-tone: transparent;
+  --blur: none;
+  --blur-sm: none;
+  --shadow: none;
+  --shadow-lg: none;
+}
+[data-motion='false'] *,
+[data-motion='false'] *::before,
+[data-motion='false'] *::after {
+  transition: none !important;
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--text) 18%, transparent) transparent;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  color: var(--text);
+  background: var(--noise), linear-gradient(var(--page-tone), var(--page-tone)), var(--glow), var(--background);
+  background-attachment: fixed;
+  font: var(--font-size) / 1.45 var(--font);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+[hidden] {
+  display: none !important;
+}
+svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+h1 {
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+h2 {
+  font-size: 1.12rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  margin: 0 0 0.6rem;
+}
+h3 {
+  font-size: 0.9rem;
+  font-weight: 640;
+  margin: 1.3rem 0 0.45rem;
+}
+h4 {
+  font-size: 0.8rem;
+  font-weight: 560;
+  color: var(--muted);
+  margin: 1rem 0 0.3rem;
+}
+p {
+  margin: 0 0 0.7rem;
+}
+a {
+  color: inherit;
+}
+code,
+kbd {
+  font-family: var(--mono);
+  font-size: 0.88em;
+}
+.muted {
+  color: var(--muted);
+}
+.small {
+  font-size: 0.85rem;
+}
+.bad {
+  color: var(--bad);
+}
+.warn {
+  color: var(--warn);
+}
+
+/* Keyboard focus: a soft ring. The browser keeps it on a text field even when the
+   field is clicked, since typing there is the point. */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Thin scrollbars that stay out of the way (see `*` above). */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text) 16%, transparent);
+  background-clip: content-box;
+  border: 2px solid transparent;
+  border-radius: 12px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--text) 30%, transparent);
+  background-clip: content-box;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes rise {
+  from {
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* While a colour is being dragged in Settings the page is restyled on every frame: nothing may start a transition towards a value that is already out of date. */
+[data-live-edit] *,
+[data-live-edit] *::before,
+[data-live-edit] *::after {
+  transition: none !important;
+}
+
+/* controls */
+/* Buttons, fields and small form pieces. Hover and press use colour, shadow and opacity without changing element geometry. */
+
+/* ----- Buttons ----- */
+button,
+.button {
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 0;
+  border-radius: var(--radius);
+  padding: 0.45rem 0.9rem;
+  background: var(--field);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px transparent;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--fast) var(--ease),
+    color var(--fast) var(--ease),
+    text-decoration-color var(--fast) var(--ease),
+    opacity var(--fast) var(--ease),
+    box-shadow var(--base) var(--ease),
+    transform var(--fast) var(--ease);
+}
+button:hover:not(:disabled),
+.button:hover {
+  background: var(--hover);
+  transform: none;
+  box-shadow:
+    inset 0 0 0 1px transparent,
+    var(--lift);
+}
+button:active:not(:disabled),
+.button:active {
+  background: var(--press);
+  transform: none;
+  box-shadow: none;
+}
+/* Icons, ghosts and menu rows respond with tone. */
+button.icon:hover:not(:disabled),
+.side-tabs button:hover:not(:disabled),
+.selection-tools button:hover:not(:disabled) {
+  transform: none;
+  box-shadow: none;
+}
+button.ghost:hover:not(:disabled),
+.button.ghost:hover {
+  transform: none;
+  box-shadow: none;
+}
+button.icon:active:not(:disabled),
+.side-tabs button:active:not(:disabled),
+.selection-tools button:active:not(:disabled),
+button.ghost:active:not(:disabled) {
+  transform: none;
+}
+button.link:hover:not(:disabled),
+.popup button:hover:not(:disabled),
+.subnav-row:hover:not(:disabled) {
+  transform: none;
+  box-shadow: none;
+}
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+button.primary,
+.button.primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+button.primary:hover:not(:disabled),
+.button.primary:hover {
+  background: color-mix(in srgb, var(--accent) 80%, white);
+  box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+button.primary:active:not(:disabled),
+.button.primary:active {
+  background: color-mix(in srgb, var(--accent) 84%, black);
+}
+button.ghost,
+.button.ghost,
+button.icon {
+  background: transparent;
+}
+button.ghost:hover:not(:disabled),
+.button.ghost:hover,
+button.icon:hover:not(:disabled) {
+  background: var(--hover);
+}
+button.ghost:active:not(:disabled),
+.button.ghost:active,
+button.icon:active:not(:disabled) {
+  background: var(--press);
+}
+button.icon {
+  display: inline-grid;
+  place-items: center;
+  padding: 0.4rem;
+  color: var(--muted);
+}
+button.icon:hover:not(:disabled) {
+  color: var(--text);
+}
+button.danger {
+  color: var(--bad);
+}
+button.danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--bad) 14%, transparent);
+}
+button.primary.danger {
+  background: var(--bad);
+  color: #fff;
+}
+button.primary.danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--bad) 86%, white);
+}
+button.link {
+  padding: 0;
+  background: none;
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--idle);
+  text-underline-offset: 3px;
+  white-space: normal;
+  text-align: left;
+}
+button.link:hover:not(:disabled) {
+  background: none;
+  text-decoration-color: var(--accent);
+}
+button.link:active:not(:disabled) {
+  background: none;
+  transform: none;
+}
+button.small {
+  padding: 0.28rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+/* ----- Fields ----- */
+input,
+select,
+textarea {
+  font: inherit;
+  width: 100%;
+  min-width: 0;
+  padding: 0.5rem 0.75rem;
+  color: var(--text);
+  background: var(--field);
+  border: 0;
+  border-radius: var(--radius);
+  box-shadow: inset 0 0 0 1px transparent;
+  transition:
+    background-color var(--fast) var(--ease),
+    box-shadow var(--base) var(--ease);
+}
+input:hover,
+select:hover,
+textarea:hover {
+  background: var(--hover);
+}
+input:focus,
+select:focus,
+textarea:focus {
+  background: color-mix(in srgb, var(--accent) 9%, var(--hover));
+}
+/* The browser's own ring stays away from mouse clicks; the keyboard ring (tokens.css) remains. */
+input:focus:not(:focus-visible),
+select:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible) {
+  outline: none;
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+textarea {
+  resize: vertical;
+}
+select {
+  appearance: none;
+  padding-right: 2.1rem;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  background-size: 16px;
+}
+option {
+  background: var(--surface);
+  color: var(--text);
+}
+input[type='color'] {
+  padding: 3px;
+  height: 2.3rem;
+  cursor: pointer;
+}
+input[type='search']::-webkit-search-cancel-button {
+  appearance: none;
+}
+textarea.code,
+pre.code {
+  font: 0.82rem/1.5 var(--mono);
+  tab-size: 2;
+}
+pre.code {
+  background: var(--field);
+  border-radius: var(--radius);
+  padding: 0.7rem 0.8rem;
+  overflow: auto;
+  max-height: 26rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0.3rem 0 0.8rem;
+}
+
+/* Radio: a round well with a dot that grows in. Checkbox: a rounded square with an outline that fills with the accent and shows a tick. */
+input[type='checkbox'],
+input[type='radio'] {
+  appearance: none;
+  display: inline-grid;
+  place-content: center;
+  flex: none;
+  width: 18px;
+  min-width: 18px;
+  max-width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+input[type='radio']::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: scale(0);
+  transition: transform var(--base) var(--ease);
+}
+input[type='radio']:checked {
+  background: var(--soft);
+}
+input[type='radio']:checked::after {
+  transform: scale(1);
+}
+input[type='radio']:focus {
+  box-shadow: none;
+}
+input[type='checkbox'] {
+  border-radius: 6px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--idle);
+  transition:
+    background-color var(--fast) var(--ease),
+    box-shadow var(--fast) var(--ease);
+}
+input[type='checkbox']:hover:not(:disabled) {
+  background: var(--field);
+  box-shadow: inset 0 0 0 1.5px var(--muted);
+}
+input[type='checkbox']::after {
+  content: '';
+  width: 14px;
+  height: 14px;
+  background: var(--on-accent);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  opacity: 0;
+  transform: scale(0.5);
+  transition:
+    opacity var(--fast) var(--ease),
+    transform var(--base) var(--ease);
+}
+input[type='checkbox']:checked,
+input[type='checkbox']:checked:hover:not(:disabled),
+input[type='checkbox']:checked:focus {
+  background: var(--accent);
+  box-shadow: none;
+}
+input[type='checkbox']:checked::after {
+  opacity: 1;
+  transform: scale(1);
+}
+input[type='checkbox']:focus-visible {
+  box-shadow: 0 0 0 3px var(--ring);
+}
+input[type='checkbox']:active {
+  transform: none;
+}
+input[type='checkbox']:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+/* ----- Form layout ----- */
+.field {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0 0 0.9rem;
+}
+.field > span {
+  font-size: 0.85rem;
+  font-weight: 560;
+}
+.field small {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+label.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+legend {
+  font-size: 0.85rem;
+  font-weight: 560;
+  margin-bottom: 0.4rem;
+}
+/* Keep permission choices separate from the free-form field, even in a narrow inspector. */
+.permission-controls {
+  min-width: 0;
+}
+.permission-controls > legend {
+  margin-bottom: 0.65rem;
+}
+.permission-fields {
+  display: grid;
+  gap: 0.85rem;
+  min-width: 0;
+}
+.permission-fields > .field {
+  min-width: 0;
+  margin: 0;
+}
+.permission-fields input:not([type='checkbox']) {
+  width: 100%;
+  min-width: 0;
+}
+.permission-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.permission-table th,
+.permission-table td {
+  padding: 0.25rem;
+  border-bottom: 1px solid var(--line);
+}
+.permission-table th {
+  text-align: left;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+.permission-table thead th {
+  padding-block: 0 0.5rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 560;
+}
+.permission-table th:not(:first-child) {
+  width: 4rem;
+  text-align: center;
+}
+.permission-choice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2rem;
+  cursor: pointer;
+}
+.permission-fields .permission-choice input {
+  width: 18px;
+  min-width: 18px;
+}
+details > summary {
+  cursor: pointer;
+  color: var(--muted);
+  margin: 0.4rem 0;
+  transition: color var(--fast) var(--ease);
+}
+details > summary:hover,
+details[open] > summary {
+  color: var(--text);
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.6rem 0;
+}
+.form-error {
+  color: var(--bad);
+}
+.stack > * {
+  margin-bottom: 0.6rem;
+}
+kbd {
+  color: var(--muted);
+  background: var(--field);
+  border-radius: 9px;
+  padding: 0.08rem 0.4rem;
+  font-size: 0.75rem;
+}
+.dot {
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-right: 0.45rem;
+  border-radius: 50%;
+  background: var(--idle);
+  flex: none;
+}
+.dot.busy {
+  background: var(--accent);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+/* ----- Colour swatches and icon grid (Library, node colour) ----- */
+.swatch {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--background);
+}
+.swatch:hover:not(:disabled) {
+  transform: none;
+}
+.swatch:active:not(:disabled) {
+  transform: none;
+}
+.swatch.active {
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 0 0 4px var(--accent);
+}
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  gap: 0.3rem;
+}
+.custom-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex: none;
+}
+.icon-grid button {
+  display: inline-grid;
+  place-items: center;
+  height: 36px;
+  padding: 0;
+}
+.icon-grid button.active {
+  background: var(--current);
+  color: var(--accent);
+}
+/* An action that adds something (Upload your own, Add input): a wide outlined button with its own caption, never mistaken for an icon or a field. */
+button.dashed-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  height: 36px;
+  padding: 0 0.8rem;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.85rem;
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text) 26%, transparent);
+}
+button.dashed-action .custom-icon {
+  width: 20px;
+  height: 20px;
+}
+button.dashed-action:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--text);
+}
+button.dashed-action.active {
+  background: var(--current);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+/* In the icon grid it takes the whole last row. */
+.icon-grid button.dashed-action {
+  grid-column: 1 / -1;
+  margin-top: 0.3rem;
+}
+
+/* The open / selected item stays distinct from hover, also while the pointer is on it (`body` outranks the per-page hover rules). */
+body button.active:not(:disabled),
+body button.active:hover:not(:disabled),
+body button[aria-selected='true']:not(:disabled),
+body button[aria-selected='true']:hover:not(:disabled) {
+  background: var(--current);
+}
+body .side-tabs button.active:hover:not(:disabled),
+body .selection-tools button.active:hover:not(:disabled),
+body .icon-grid button.active:not(.dashed-action):hover:not(:disabled) {
+  color: var(--accent);
+}
+
+.tool-strip {
+  --tool-size: 32px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--radius);
+  background: var(--float);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--shadow);
+}
+.tool-strip > button {
+  flex: none;
+  min-height: var(--tool-size);
+}
+:is(.tool-strip, .side-tabs) > .icon {
+  flex: none;
+  width: var(--tool-size, 40px);
+  height: var(--tool-size, 40px);
+  min-height: var(--tool-size, 40px);
+  padding: 0;
+}
+.tool-strip > .icon[aria-pressed='true'],
+.tool-strip > .icon.active {
+  background: var(--current);
+  color: var(--text);
+}
+
+@media (max-width: 760px) {
+  .compact-label { width: 40px; min-width: 40px; padding: 0; }
+  .compact-label > span { display: none; }
+}

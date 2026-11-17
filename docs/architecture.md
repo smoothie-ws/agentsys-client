@@ -2,14 +2,14 @@
 
 The client is a static application. index.html loads presentation helpers, the
 editing snapshot model, environment transport, UI and sandboxed client plugins.
-js/app/environments.js is the single transport for server resources and SSE.
+js/environments.js is the single transport for server resources and SSE.
 Browser preferences, environment lists and plugin records remain browser-local;
 projects, workflows, collections, secrets and runtime state belong to the server.
 Switching environments aborts old requests and invalidates caches. Credentials
 are scoped to the exact URL and tab session. No server implementation is imported.
 
-client/public-files.json is the exact distribution allowlist. client/build.js
-copies only those files to dist/client. Optional bin/agentsys-client.js serves
+public-files.json is the exact distribution allowlist. tools/build.js
+copies only those files to dist/client. Optional cli.js serves
 that artifact and does not proxy API calls. Production needs only static hosting.
 
 ## API transport
@@ -30,13 +30,12 @@ contains no storage access. It edits and observes whatever the active AgentSys S
 ### Running
 
 ```sh
-node bin/agentsys-client.js --port 8081 --server http://127.0.0.1:8080
-## or, for a local session with both processes:
+node cli.js --port 8081 --server http://127.0.0.1:8080
+## or use the npm launcher:
 npm start
 ```
 
-`npm start` / `start.bat` launch an AgentSys Server on port 8080 and a client on 8081, then open the client.
-They remain separate processes: closing the browser does not stop the server or its workflows.
+`npm start` serves the built Client on port 8081. Start AgentSys Server separately; closing the browser does not stop its workflows.
 
 The client can also be served by any static web server. `--server` and `AGENTSYS_DEFAULT_SERVER` only choose
 the initial environment for a fresh browser profile; the user can add or change servers in the interface.
@@ -45,18 +44,18 @@ the initial environment for a fresh browser profile; the user can add or change 
 
 `index.html` loads:
 
-- `js/app/core.js`, `js/app/protocol.js` — pure helpers and the API contract.
-- `js/storage/format.js` — reading and writing `agentsys.text/1` packets for import/export.
-- `js/model/{graph,types}.js` — read-only graph contracts, type compatibility and preview lookup.
-- `js/app/*`, `js/pages/*`, `js/canvas/*`, `js/inspector/*`, CSS.
+- `js/model.js`, `js/protocol.js` — pure helpers and the API contract.
+- `js/format.js` — reading and writing `agentsys.text/1` packets for import/export.
+- `js/ui.js`, `js/navigation.js`, `js/pages.js`, `js/shell.js` — presentation and navigation.
+- `js/canvas.js`, `js/interactions.js`, `js/run.js`, `js/inspector.js` — graph editing and execution controls.
+- `js/plugins.js`, `js/plugin-store.js`, `js/plugin-host.js` — contracts, browser storage and sandboxed plugins.
 
 It does **not** load the graph mutation editor, schema validation, snapshot/document construction,
-execution-view builder or interpreter. Those six model implementations, `js/backend/**` and
-`js/storage/db.js` are refused by the static Client launcher. All graph changes go through the application API.
+execution-view builder or interpreter. Server runtime and filesystem modules are refused by the static Client launcher. All graph changes go through the application API.
 
 ### API transport
 
-`js/app/environments.js` is the only transport. Every request passes through it; there is no direct `fetch('/api')`
+`js/environments.js` is the only transport. Every request passes through it; there is no direct `fetch('/api')`
 in a page or canvas module.
 
 - Base URL of the active environment.

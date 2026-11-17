@@ -7,68 +7,29 @@
   <meta name="color-scheme" content="dark light">
   <title>AgentSys</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23141821'/%3E%3Cpath d='M9 22V10m0 6h7m0-6v12m0-6h7' fill='none' stroke='%23ff7a45' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/tokens.css">
-  <link rel="stylesheet" href="css/controls.css">
-  <link rel="stylesheet" href="css/shell.css">
-  <link rel="stylesheet" href="css/nav-joined.css">
-  <link rel="stylesheet" href="css/pages.css">
-  <link rel="stylesheet" href="css/overlays.css">
-  <link rel="stylesheet" href="css/canvas.css">
-  <link rel="stylesheet" href="css/inspector.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/editor.css">
   <link rel="stylesheet" href="css/mobile.css">
   <!-- Client only: no storage layer, no interpreter and no backend. The graph model is used to edit and
        validate what the server owns; all data and execution go through the API transport. -->
-  <script defer src="js/app/core.js"></script>
-  <script defer src="js/app/protocol.js"></script>
-  <script defer src="js/storage/format.js"></script>
-  <script defer src="js/model/types.js"></script>
-  <script defer src="js/model/graph.js"></script>
-  <script defer src="js/app/plugin-capabilities.js"></script>
-  <script defer src="js/app/plugin-manifest.js"></script>
-  <script defer src="js/app/plugin-deploy.js"></script>
-  <script defer src="js/app/plugin-store.js"></script>
-  <script defer src="js/app/config.js"></script>
-  <script defer src="js/app/environments.js"></script>
-  <script defer src="js/app/helpers.js"></script>
-  <script defer src="js/app/markdown.js"></script>
-  <script defer src="js/app/dialogs.js"></script>
-  <script defer src="js/app/code-editor.js"></script>
-  <script defer src="js/app/popup.js"></script>
-  <script defer src="js/app/color-picker.js"></script>
-  <script defer src="js/app/type-ui.js"></script>
-  <script defer src="js/app/preferences.js"></script>
-  <script defer src="js/app/router.js"></script>
-  <script defer src="js/app/tabs.js"></script>
-  <script defer src="js/app/nav.js"></script>
-  <script defer src="js/app/notifications.js"></script>
-  <script defer src="js/app/plugin-content.js"></script>
-  <script defer src="js/app/plugin-frame.js"></script>
-  <script defer src="js/app/plugin-views.js"></script>
-  <script defer src="js/app/extensions.js"></script>
-  <script defer src="js/app/shell.js"></script>
-  <script defer src="js/app/mobile.js"></script>
-  <script defer src="js/canvas/geometry.js"></script>
-  <script defer src="js/pages/shared.js"></script>
-  <script defer src="js/pages/projects.js"></script>
-  <script defer src="js/pages/settings.js"></script>
-  <script defer src="js/pages/plugins.js"></script>
-  <script defer src="js/pages/ext.js"></script>
-  <script defer src="js/pages/library.js"></script>
-  <script defer src="js/pages/api.js"></script>
-  <script defer src="js/pages/home.js"></script>
-  <script defer src="js/pages/environments.js"></script>
-  <script defer src="js/canvas/page.js"></script>
-  <script defer src="js/canvas/data.js"></script>
-  <script defer src="js/canvas/render.js"></script>
-  <script defer src="js/canvas/camera.js"></script>
-  <script defer src="js/canvas/selection.js"></script>
-  <script defer src="js/canvas/interaction.js"></script>
-  <script defer src="js/canvas/hints.js"></script>
-  <script defer src="js/canvas/wires.js"></script>
-  <script defer src="js/canvas/menus.js"></script>
-  <script defer src="js/canvas/commands.js"></script>
-  <script defer src="js/canvas/run.js"></script>
-  <script defer src="js/inspector/inspector.js"></script>
+  <script defer src="js/model.js"></script>
+  <script defer src="js/protocol.js"></script>
+  <script defer src="js/format.js"></script>
+  <script defer src="js/plugins.js"></script>
+  <script defer src="js/plugin-store.js"></script>
+  <script defer src="js/environments.js"></script>
+  <script defer src="js/markdown.js"></script>
+<script defer src="js/ui.js"></script>
+  <script defer src="js/navigation.js"></script>
+  <script defer src="js/plugin-host.js"></script>
+  <script defer src="js/shell.js"></script>
+  <script defer src="js/geometry.js"></script>
+  <script defer src="js/pages.js"></script>
+  <script defer src="js/canvas.js"></script>
+  <script defer src="js/interactions.js"></script>
+  <script defer src="js/run.js"></script>
+  <script defer src="js/inspector.js"></script>
 </head>
 <body>
   <noscript>AgentSys needs JavaScript.</noscript>

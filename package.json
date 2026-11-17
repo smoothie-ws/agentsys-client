@@ -4,23 +4,22 @@
   "description": "Independent AgentSys client",
   "license": "UNLICENSED",
   "bin": {
-    "agentsys-client": "bin/agentsys-client.js"
+    "agentsys-client": "cli.js"
   },
   "engines": {
     "node": ">=22"
   },
   "scripts": {
     "test": "node --test",
-    "start": "node bin/agentsys-client.js",
-    "build": "node client/build.js",
-    "pretest": "node client/build.js",
-    "prepack": "node client/build.js",
-    "prestart": "node client/build.js"
+    "start": "node cli.js",
+    "build": "node tools/build.js",
+    "pretest": "node tools/build.js",
+    "prepack": "node tools/build.js",
+    "prestart": "node tools/build.js"
   },
   "files": [
-    "bin/",
-    "client/static-assets.js",
-    "client/public-files.json",
+    "cli.js",
+    "public-files.json",
     "dist/client/"
   ]
 }

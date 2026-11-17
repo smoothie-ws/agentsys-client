@@ -40,7 +40,7 @@ sees only the ordinary API calls a plugin makes. A package cannot install a serv
 
 ### Parts
 
-#### Package store — `js/app/plugin-store.js`
+#### Package store — `js/plugin-store.js`
 
 - Keeps at most 50 packages, validates every field and replaces matching IDs and refuses unsafe paths.
 - Keeps the enabled state, the installed and updated timestamps, the activated content checksum.
@@ -48,7 +48,7 @@ sees only the ordinary API calls a plugin makes. A package cannot install a serv
   sandbox cannot read or write.
 - Exports a package in the distributable format. It never executes code.
 
-#### Manifest contract — `js/app/plugin-manifest.js`
+#### Manifest contract — `js/plugins.js`
 
 Pure validation shared by the browser, the pack tool and the tests:
 
@@ -57,7 +57,7 @@ Pure validation shared by the browser, the pack tool and the tests:
 - dependency IDs and dependency cycles;
 - deterministic checksums and export/import round trips.
 
-#### Extension host — `js/app/extensions.js`
+#### Extension host — `js/plugin-host.js`
 
 - Starts every enabled plugin in its own `<iframe sandbox="allow-scripts">` with an opaque origin and a restrictive
   CSP. The frame is one CSS pixel and off-screen.
@@ -67,25 +67,25 @@ Pure validation shared by the browser, the pack tool and the tests:
   failure recovery.
 - Owns live sandboxes and one error map. Commands, explicit links and styles are removed with their owner.
 
-#### Isolated SDK program — `js/app/plugin-frame.js`
+#### Isolated SDK program — `js/plugin-host.js`
 
 Builds the opaque iframe document from serialized package/lifecycle configuration. Module loading, SDK helpers
 and plugin-side invocation handlers run inside that document. They cannot close over host state. The host-facing
 interface is only `PluginFrame.document(plugin, context)`; the public plugin SDK remains unchanged.
 
-#### Rendered contributions — `js/app/plugin-views.js`
+#### Rendered contributions — `js/plugin-host.js`
 
 One registration list owns pages, Library sections, resource views, home cards, settings and Inspector sections.
 Page/navigation/section lists are derived rather than independently synchronized. Each record uses only its
 owner's `invoke` and `checkedRequest` capabilities. Resource views cannot fetch records through an operator
 credential. Cleanup removes all projections by removing the owner's records.
 
-#### Passive content ? `js/app/plugin-content.js`
+#### Passive content ? `js/plugin-host.js`
 
 HTML/CSS sanitization and own-command decoration are separate from lifecycle/RPC. Packages cannot provide host
 action attributes. See [UI](plugins.md#ui) for the supported passive syntax.
 
-#### Capability layer — `js/app/plugin-capabilities.js`
+#### Capability layer — `js/plugins.js`
 
 Classifies each API call from its method, path and body (not from the plugin's label) and rejects one the package did
 not declare. The server repeats the check on a scoped token.
@@ -97,7 +97,7 @@ The host exchanges its own credential for a short-lived token limited to the plu
 revokes its token immediately; a server switch revokes tokens at the server that issued them and never sends them to
 the next environment. See [capabilities](plugins.md#capabilities) and [security](plugins.md#security).
 
-#### Resource deployment — `js/app/plugin-deploy.js`
+#### Resource deployment — `js/plugins.js`
 
 Turns a package's `contributes` section into ordinary server data, idempotently and per environment:
 
@@ -112,7 +112,7 @@ The deployed graph is saved by the server. Running it needs no client, plugin ho
 - A plugin never imports application internals. It receives `api` and uses `api.request` or the helpers built on it.
 - The application never imports plugin code. It starts a sandbox and exchanges JSON messages.
 - The server does not know that a Library node came from a plugin. It validates and runs it like any other node.
-- The shared rules live in `js/app/core.js`, `js/app/plugin-manifest.js` and `js/app/plugin-capabilities.js`; the
+- The shared rules live in `js/model.js` and `js/plugins.js`; the
   server and the client use the same capability grammar.
 
 ### State ownership
@@ -1024,7 +1024,7 @@ error to fix, capabilities, Library nodes, a package and an update.
 ### 1. Start AgentSys
 
 ```bash
-node bin/agentsys-client.js serve --port 8081 --server http://127.0.0.1:8080
+node cli.js serve --port 8081 --server http://127.0.0.1:8080
 ```
 
 Start AgentSys Server separately, then open the client address.

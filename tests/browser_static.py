@@ -4,7 +4,7 @@ import json, os, queue, re, subprocess, threading
 from playwright.sync_api import sync_playwright
 
 root=Path(__file__).resolve().parents[1]
-proc=subprocess.Popen(['node',str(root/'bin/agentsys-client.js'),'serve','--port','0'],cwd=root,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
+proc=subprocess.Popen(['node',str(root/'cli.js'),'serve','--port','0'],cwd=root,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
 lines=queue.Queue()
 def read():
     for line in proc.stdout: lines.put(line)

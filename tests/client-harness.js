@@ -4,7 +4,7 @@ const path = require('node:path');
 
 // The real static launcher, with its own ephemeral port and no backend in the client process.
 async function withClient(work, serverURL = 'http://127.0.0.1:1') {
-  const child = spawn(process.execPath, ['bin/agentsys-client.js', '--port', '0', '--server', serverURL], {
+  const child = spawn(process.execPath, ['cli.js', '--port', '0', '--server', serverURL], {
     cwd: path.join(__dirname, '..'), stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true,
   });
   let output = '';
