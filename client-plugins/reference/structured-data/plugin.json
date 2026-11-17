@@ -2,7 +2,7 @@
   "id": "reference-structured-data",
   "name": "Reference: Structured Data",
   "version": "0.1.0",
-  "description": "A custom collection with CRUD, validation, a schema migration and a conflict-aware update path, plus a resource view drawn by the plugin.",
+  "description": "A custom collection with CRUD, validation, schema editing and conditional updates, plus a resource view drawn by the plugin.",
   "icon": "database",
   "api": 1,
   "capabilities": [

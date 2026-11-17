@@ -23,7 +23,7 @@ async function view() {
 
 async function settings() {
   const value = await api.settings.get();
-  return `<p class="muted">Data version: <strong>${escape(String(value.schemaVersion ?? 0))}</strong></p>
+  return `<p class="muted">Priority field: <strong>${value.schemaExtended ? 'enabled' : 'not added'}</strong></p>
     <p class="muted small">A schema change is a normal collection update; existing records are never deleted.</p>
     <button type="button" data-command="change-schema">Change schema</button>`;
 }
@@ -43,7 +43,7 @@ exports.activate = async pluginApi => {
   api.ui.addSettingsSection({
     id: 'structured-data',
     title: 'Structured Data',
-    description: 'Migration state of the reference collection.',
+    description: 'Schema settings for the reference collection.',
     render: () => settings(),
   });
   api.commands.register('add-note', async () => {
