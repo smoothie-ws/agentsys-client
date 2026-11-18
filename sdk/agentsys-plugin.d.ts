@@ -3,7 +3,7 @@
 //
 // TypeScript is optional. A plugin is ordinary JavaScript: `exports.activate = api => { ... }` runs in the
 // sandboxed host. These declarations exist for editors and for projects that choose TypeScript; there is no build
-// step and no runtime package to import. See docs/plugins.md#api.
+// step and no runtime package to import. See https://github.com/smoothie-ws/agentsys/wiki/Plugin-Reference#api.
 //
 // The API an installed plugin receives is `AgentSysPluginApi`. The host injects it; a plugin never imports the
 // application's internal modules.

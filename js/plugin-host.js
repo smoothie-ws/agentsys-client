@@ -464,7 +464,7 @@ class PluginViews {
 // timer belongs to one sandbox and is dropped with it.
 //
 // This is an isolation boundary for convenience plugins, not a hardened boundary against a malicious program:
-// an installed plugin can call the same API this user can, within its declared capabilities. See docs/plugins.md.
+// an installed plugin can call the same API this user can, within its declared capabilities. See https://github.com/smoothie-ws/agentsys/wiki/Plugin-Reference.
 
 const Extensions = (() => {
   const loaded = new Map(); // plugin id -> sandbox
